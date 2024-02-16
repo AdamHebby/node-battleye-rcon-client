@@ -3,7 +3,7 @@ import Ban from "../Models/Ban";
 import Server from "../Models/Server";
 import $ from "jquery";
 import { EventEmitter } from "events";
-import Events from "../Events";
+import ServerEvents from "../ServerEvents";
 import Settings from "../Models/Settings";
 import SettingsManager from "./SettingsManager";
 import VariableTimer from "../VariableTimer";
@@ -40,7 +40,7 @@ class Nart {
             this.socket = new WebSocket(Nart.WEBSOCKET_URL);
             if (this.socket !== null) {
                 this.setupSocket();
-                this.eventEmitter.emit(Events.SOCK_RECONNECT);
+                this.eventEmitter.emit(ServerEvents.SOCK_RECONNECT);
             }
         }, 5000);
     }
@@ -51,7 +51,7 @@ class Nart {
         }
 
         this.socket.onclose = () => {
-            this.eventEmitter.emit(Events.SOCK_CLOSE);
+            this.eventEmitter.emit(ServerEvents.SOCK_CLOSE);
             this.socket = null;
             this.reconnectTimer.start();
         }
@@ -59,8 +59,8 @@ class Nart {
         this.socket.onopen = () => {
             this.reconnectTimer.stop();
 
-            Console.getInstance().logEvent(Events.SOCK_OPEN, "Connected to Nart");
-            this.eventEmitter.emit(Events.SOCK_OPEN);
+            Console.getInstance().logEvent(ServerEvents.SOCK_OPEN, "Connected to Nart");
+            this.eventEmitter.emit(ServerEvents.SOCK_OPEN);
 
             Console.getInstance().onChat = (message: string) => {
                 this.messageAll(message);
@@ -73,22 +73,22 @@ class Nart {
         };
 
         let ignoreLogEvents = [
-            Events.PLAYERS,
-            Events.BANS,
-            Events.ADMINS,
+            ServerEvents.PLAYERS,
+            ServerEvents.BANS,
+            ServerEvents.ADMINS,
 
-            Events.SETTINGS_LIST,
-            Events.SETTINGS_SAVE,
+            ServerEvents.SETTINGS_LIST,
+            ServerEvents.SETTINGS_SAVE,
 
-            Events.SERVERS_LIST,
-            Events.SERVER_DELETE,
-            Events.SERVERS_SAVE,
+            ServerEvents.SERVERS_LIST,
+            ServerEvents.SERVER_DELETE,
+            ServerEvents.SERVERS_SAVE,
 
-            Events.COLORS_LIST,
-            Events.COLORS_SAVE,
+            ServerEvents.COLORS_LIST,
+            ServerEvents.COLORS_SAVE,
 
-            Events.CHAT_PLAYER_JOIN,
-            Events.CHAT_PLAYER_LEAVE,
+            ServerEvents.CHAT_PLAYER_JOIN,
+            ServerEvents.CHAT_PLAYER_LEAVE,
         ];
 
         this.socket.onmessage = (event: MessageEvent) => {
@@ -98,36 +98,36 @@ class Nart {
                 Console.getInstance().logEvent(data.type, data);
             }
 
-            if (data.type === Events.VERSION) {
-                this.eventEmitter.emit(Events.VERSION, data.data);
+            if (data.type === ServerEvents.VERSION) {
+                this.eventEmitter.emit(ServerEvents.VERSION, data.data);
                 return;
             }
 
-            if (data.type === Events.CHAT_PLAYER_JOIN) {
-                this.eventEmitter.emit(Events.CHAT_PLAYER_JOIN, data.data);
+            if (data.type === ServerEvents.CHAT_PLAYER_JOIN) {
+                this.eventEmitter.emit(ServerEvents.CHAT_PLAYER_JOIN, data.data);
 
-                Console.getInstance().logEvent(Events.CHAT_PLAYER_JOIN, data.data.message);
+                Console.getInstance().logEvent(ServerEvents.CHAT_PLAYER_JOIN, data.data.message);
                 return;
             }
 
-            if (data.type === Events.CHAT_PLAYER_LEAVE) {
-                this.eventEmitter.emit(Events.CHAT_PLAYER_LEAVE, data.data);
+            if (data.type === ServerEvents.CHAT_PLAYER_LEAVE) {
+                this.eventEmitter.emit(ServerEvents.CHAT_PLAYER_LEAVE, data.data);
 
-                Console.getInstance().logEvent(Events.CHAT_PLAYER_LEAVE, data.data.message);
+                Console.getInstance().logEvent(ServerEvents.CHAT_PLAYER_LEAVE, data.data.message);
                 return;
             }
 
-            if (data.type === Events.COLORS_LIST) {
-                this.eventEmitter.emit(Events.COLORS_LIST, data.data);
+            if (data.type === ServerEvents.COLORS_LIST) {
+                this.eventEmitter.emit(ServerEvents.COLORS_LIST, data.data);
                 return;
             }
 
-            if (data.type === Events.COLORS_SAVE) {
-                this.eventEmitter.emit(Events.COLORS_SAVE, data.data);
+            if (data.type === ServerEvents.COLORS_SAVE) {
+                this.eventEmitter.emit(ServerEvents.COLORS_SAVE, data.data);
                 return;
             }
 
-            if (data.type === Events.SETTINGS_LIST) {
+            if (data.type === ServerEvents.SETTINGS_LIST) {
                 let manager = SettingsManager.getInstance();
                 manager.update(data.data as Settings);
 
@@ -137,22 +137,22 @@ class Nart {
                     manager.settings.get('admins-refresh-interval') * 1000,
                 )
 
-                this.eventEmitter.emit(Events.SETTINGS_LIST, data.data);
+                this.eventEmitter.emit(ServerEvents.SETTINGS_LIST, data.data);
                 return;
             }
 
-            if (data.type === Events.ADMINS) {
-                this.eventEmitter.emit(Events.ADMINS, data.data);
+            if (data.type === ServerEvents.ADMINS) {
+                this.eventEmitter.emit(ServerEvents.ADMINS, data.data);
                 return;
             }
 
-            if (data.type === Events.SETTINGS_SAVE) {
-                this.eventEmitter.emit(Events.SETTINGS_SAVE, data);
+            if (data.type === ServerEvents.SETTINGS_SAVE) {
+                this.eventEmitter.emit(ServerEvents.SETTINGS_SAVE, data);
                 return;
             }
 
-            if (data.type === Events.SERVERS_LIST) {
-                this.eventEmitter.emit(Events.SERVERS_LIST, data);
+            if (data.type === ServerEvents.SERVERS_LIST) {
+                this.eventEmitter.emit(ServerEvents.SERVERS_LIST, data);
                 return;
             }
 
@@ -166,34 +166,34 @@ class Nart {
             //     return;
             // }
 
-            if (data.type === Events.PLAYERS) {
+            if (data.type === ServerEvents.PLAYERS) {
                 this.lastAutoRefreshPlayers = new Date().getTime();
                 let players = data.data;
 
-                this.eventEmitter.emit(Events.PLAYERS, players);
+                this.eventEmitter.emit(ServerEvents.PLAYERS, players);
                 return;
             }
 
-            if (data.type === Events.BANS) {
+            if (data.type === ServerEvents.BANS) {
                 let bans: Ban[] = [];
 
                 data.data.forEach(function (ban: any) {
                     bans.push(Ban.fromJson(ban));
                 });
 
-                this.eventEmitter.emit(Events.BANS, bans);
+                this.eventEmitter.emit(ServerEvents.BANS, bans);
 
                 return;
             }
 
-            if (data.type === Events.RCON_DISCONNECT) {
+            if (data.type === ServerEvents.RCON_DISCONNECT) {
                 this.autoRefreshPlayersInterval.stop();
-                this.eventEmitter.emit(Events.RCON_DISCONNECT);
+                this.eventEmitter.emit(ServerEvents.RCON_DISCONNECT);
             }
 
-            if (data.type === Events.RCON_CONNECT) {
+            if (data.type === ServerEvents.RCON_CONNECT) {
                 this.serverId = data.data.id;
-                this.eventEmitter.emit(Events.RCON_CONNECT, this.serverId);
+                this.eventEmitter.emit(ServerEvents.RCON_CONNECT, this.serverId);
                 this.autoRefreshPlayersInterval.start(500);
             }
 
@@ -236,19 +236,19 @@ class Nart {
 
     public connect(serverId: number) {
         this.serverId = serverId;
-        this.sendCommand(Events.RCON_CONNECT, {id: serverId});
+        this.sendCommand(ServerEvents.RCON_CONNECT, {id: serverId});
     }
 
     public messageUser(id: number, message: string) {
-        this.sendCommand(Events.CHAT_PRIVATE_MESSAGE, {id: id, message: message});
+        this.sendCommand(ServerEvents.CHAT_PRIVATE_MESSAGE, {id: id, message: message});
     }
 
     public messageAll(message: string) {
-        this.sendCommand(Events.CHAT_ADMIN_MESSAGE, {message: message});
+        this.sendCommand(ServerEvents.CHAT_ADMIN_MESSAGE, {message: message});
     }
 
     public kickUser(id: number, reason: string) {
-        this.sendCommand(Events.USER_KICK, {id: id, reason: reason});
+        this.sendCommand(ServerEvents.USER_KICK, {id: id, reason: reason});
     }
 
     public banUser(id: number, reason: string, duration: number) {

@@ -2,7 +2,7 @@ import Ban from "./Models/Ban";
 import Player from "./Models/Player";
 import Server from "./Models/Server";
 import Nart from "./Frontend/Nart";
-import Events from "./Events";
+import ServerEvents from "./ServerEvents";
 
 import $ from "jquery";
 import "bootstrap";
@@ -85,7 +85,7 @@ $(function () {
     const consoleColorsManager = new ConsoleColorManager($('#settings-chat-colors-form'));
     Console.getInstance();
 
-    nart.eventEmitter.on(Events.PLAYERS, function (players: {players: Player[], playerRecords: PlayerRecord[]}) {
+    nart.eventEmitter.on(ServerEvents.PLAYERS, function (players: {players: Player[], playerRecords: PlayerRecord[]}) {
         $('#players-db').empty();
         $('#server-players').empty();
 
@@ -154,7 +154,7 @@ $(function () {
         </div>
     `).hide().appendTo('body');
 
-    nart.eventEmitter.on(Events.BANS, function (bans: Ban[]) {
+    nart.eventEmitter.on(ServerEvents.BANS, function (bans: Ban[]) {
         $('#server-bans').empty();
         bans.forEach(function (ban: Ban) {
             $('#server-bans').append(`
@@ -193,7 +193,7 @@ $(function () {
         text.split('\n').forEach(function (line: string) {
             let [event, eq, color, c, enabled] = line.split(/(\=|,)/g).map((s: string) => s.trim());
 
-            colors.push(new ConsoleColor(event as Events, color, enabled === '1'));
+            colors.push(new ConsoleColor(event as ServerEvents, color, enabled === '1'));
         });
 
         textArea.val('');
@@ -214,7 +214,7 @@ $(function () {
 
     $('#settings-colors-default').on('click', function () {
         ConsoleColorManager.getInstance().default();
-        nart.sendCommand(Events.COLORS_SAVE, ConsoleColorManager.getInstance().consoleColors);
+        nart.sendCommand(ServerEvents.COLORS_SAVE, ConsoleColorManager.getInstance().consoleColors);
     });
 
     $('[data-tab-control]').on('click', function () {
@@ -245,26 +245,26 @@ $(function () {
         $('#server-refresh-status').text('Never');
     };
 
-    nart.eventEmitter.on(Events.RCON_CONNECT, function (id: number) {
+    nart.eventEmitter.on(ServerEvents.RCON_CONNECT, function (id: number) {
         jqServerConnected(id);
     });
 
-    nart.eventEmitter.on(Events.RCON_DISCONNECT, function (response: {data: boolean}) {
+    nart.eventEmitter.on(ServerEvents.RCON_DISCONNECT, function (response: {data: boolean}) {
         jqServerDisconnected();
     });
 
-    nart.eventEmitter.on(Events.RCON_RECONNECT, function (id: number) {
+    nart.eventEmitter.on(ServerEvents.RCON_RECONNECT, function (id: number) {
         jqServerConnected(id);
     });
 
-    nart.eventEmitter.on(Events.ADMINS, function (data: { id: number, ip: string, port: number}[]) {
+    nart.eventEmitter.on(ServerEvents.ADMINS, function (data: { id: number, ip: string, port: number}[]) {
         $('#server-info-admins').text(data.length);
     });
 
-    nart.eventEmitter.on(Events.SOCK_OPEN, function () {
-        nart.sendCommand(Events.SERVERS_LIST, []);
-        nart.sendCommand(Events.SETTINGS_LIST, []);
-        nart.sendCommand(Events.COLORS_LIST, []);
+    nart.eventEmitter.on(ServerEvents.SOCK_OPEN, function () {
+        nart.sendCommand(ServerEvents.SERVERS_LIST, []);
+        nart.sendCommand(ServerEvents.SETTINGS_LIST, []);
+        nart.sendCommand(ServerEvents.COLORS_LIST, []);
 
         $('#server-connect').on('click', function (e) {
             e.preventDefault();
@@ -279,7 +279,7 @@ $(function () {
         $('#server-disconnect').on('click', function (e) {
             e.preventDefault();
 
-            nart.sendCommand(Events.RCON_DISCONNECT, []);
+            nart.sendCommand(ServerEvents.RCON_DISCONNECT, []);
         });
 
         $('#server-selection').on('change', function () {
@@ -294,22 +294,22 @@ $(function () {
         });
 
         $('#settings-config-save').on('click', function (e) {
-            nart.sendCommand(Events.SETTINGS_SAVE, settingsManager.settings);
+            nart.sendCommand(ServerEvents.SETTINGS_SAVE, settingsManager.settings);
         });
 
         $('#settings-colors-save').on('click', function (e) {
-            nart.sendCommand(Events.COLORS_SAVE, consoleColorsManager.save());
+            nart.sendCommand(ServerEvents.COLORS_SAVE, consoleColorsManager.save());
         });
 
         serverManager.onSave = function (servers: Server[]) {
-            nart.sendCommand(Events.SERVERS_SAVE, servers);
+            nart.sendCommand(ServerEvents.SERVERS_SAVE, servers);
         };
 
         serverManager.onDelete = function (server: Server) {
-            nart.sendCommand(Events.SERVER_DELETE, {id: server.id});
+            nart.sendCommand(ServerEvents.SERVER_DELETE, {id: server.id});
         };
 
-        nart.eventEmitter.addListener(Events.SERVERS_LIST, function (servers: {data: Server[]}) {
+        nart.eventEmitter.addListener(ServerEvents.SERVERS_LIST, function (servers: {data: Server[]}) {
             let previousSelected = $('#server-selection option:selected').val();
             $('#server-selection').empty();
             $('#server-selection').append('<option value="0">SERVER SELECT</option>');
@@ -327,7 +327,7 @@ $(function () {
             serverManager.update(servers.data);
         });
 
-        nart.eventEmitter.addListener(Events.COLORS_LIST, function (colors: ConsoleColor[]) {
+        nart.eventEmitter.addListener(ServerEvents.COLORS_LIST, function (colors: ConsoleColor[]) {
             consoleColorsManager.update(colors);
         });
 
@@ -413,7 +413,7 @@ $(function () {
                             return;
                         }
 
-                        nart.sendCommand(Events.SET_COMMENT, {id: dbId, comment: data.comment});
+                        nart.sendCommand(ServerEvents.SET_COMMENT, {id: dbId, comment: data.comment});
                     });
                     return;
                 }
@@ -426,7 +426,7 @@ $(function () {
                             return;
                         }
 
-                        nart.sendCommand(Events.SET_NICKNAME, {id: dbId, nickname: data.nickname});
+                        nart.sendCommand(ServerEvents.SET_NICKNAME, {id: dbId, nickname: data.nickname});
                     });
                     return;
                 }

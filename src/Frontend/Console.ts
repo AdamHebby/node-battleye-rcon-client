@@ -1,5 +1,5 @@
 import $ from "jquery";
-import Events from "../Events";
+import ServerEvents from "../ServerEvents";
 import { ConsoleColor } from "../Models/ConsoleColors";
 import ConsoleColorManager from "./ConsoleColorManager";
 
@@ -24,10 +24,10 @@ class Console {
 
                 if (mode === 0) {
                     this.onCommand(message);
-                    this.logEvent(Events.CHAT_DEBUG, `Command: ${message}`);
+                    this.logEvent(ServerEvents.CHAT_DEBUG, `Command: ${message}`);
                 } else {
                     this.onChat(message);
-                    this.logEvent(Events.CHAT_DEBUG, `Chat: ${message}`);
+                    this.logEvent(ServerEvents.CHAT_DEBUG, `Chat: ${message}`);
                 }
 
                 $('#console-input-text').val('');
@@ -48,10 +48,6 @@ class Console {
         window.console.log = log;
         window.console.error = error;
         window.console.warn = warn;
-
-        console.log('test');
-        console.error('test');
-        console.warn('test');
 
         this.clear();
         this.scrollBottom();
@@ -76,26 +72,26 @@ class Console {
     }
 
     public clear() {
-        $('#console').text('');
+        $('#console').empty();
     }
 
     public error(message: string|object|number|boolean|undefined|null) {
-        this.logEvent(Events.CHAT_ERROR, message);
+        this.logEvent(ServerEvents.CHAT_ERROR, message);
     }
 
     public warn(message: string|object|number|boolean|undefined|null) {
-        this.logEvent(Events.CHAT_ERROR, message);
+        this.logEvent(ServerEvents.CHAT_ERROR, message);
     }
 
     public debug(message: string|object|number|boolean|undefined|null) {
-        this.logEvent(Events.CHAT_DEBUG, message);
+        this.logEvent(ServerEvents.CHAT_DEBUG, message);
     }
 
     public log(message: string|object|number|boolean|undefined|null) {
-        this.logEvent(Events.MESSAGE, message);
+        this.logEvent(ServerEvents.MESSAGE, message);
     }
 
-    public logEvent(event: Events, data: any = null) {
+    public logEvent(event: ServerEvents, data: any = null) {
         if (typeof data === 'object') {
             if (typeof data.data === 'object') {
                 data = 'OBJECT: ' + JSON.stringify(data.data);
@@ -104,15 +100,15 @@ class Console {
             }
         }
 
-        if (event === Events.RCON_DISCONNECT) data = 'RCon Disconnected';
-        if (event === Events.RCON_CONNECT) data = 'RCon Connected';
-        if (event === Events.RCON_RECONNECT) data = 'RCon Reconnected';
-        if (event === Events.SOCK_OPEN) data = 'Socket Opened';
-        if (event === Events.SOCK_CLOSE) data = 'Socket Closed';
-        if (event === Events.SOCK_ERROR) data = 'Socket Error: ' + data;
-        if (event === Events.SOCK_RECONNECT) data = 'Socket Reconnected';
-        if (event === Events.CHAT_DEBUG) data = 'DEBUG: ' + data;
-        if (event === Events.CHAT_ERROR) data = 'ERROR: ' + data;
+        if (event === ServerEvents.RCON_DISCONNECT) data = 'RCon Disconnected';
+        if (event === ServerEvents.RCON_CONNECT) data = 'RCon Connected';
+        if (event === ServerEvents.RCON_RECONNECT) data = 'RCon Reconnected';
+        if (event === ServerEvents.SOCK_OPEN) data = 'Socket Opened';
+        if (event === ServerEvents.SOCK_CLOSE) data = 'Socket Closed';
+        if (event === ServerEvents.SOCK_ERROR) data = 'Socket Error: ' + data;
+        if (event === ServerEvents.SOCK_RECONNECT) data = 'Socket Reconnected';
+        if (event === ServerEvents.CHAT_DEBUG) data = 'DEBUG: ' + data;
+        if (event === ServerEvents.CHAT_ERROR) data = 'ERROR: ' + data;
 
         if (data === null) {
             data = 'No data provided';
@@ -124,7 +120,7 @@ class Console {
         );
     }
 
-    private colorize(event: Events, element: JQuery<HTMLElement>): JQuery<HTMLElement> {
+    private colorize(event: ServerEvents, element: JQuery<HTMLElement>): JQuery<HTMLElement> {
         let color = this.colors.find((color: ConsoleColor) => color.event.toUpperCase() === event.toUpperCase());
 
         if (color && color.enabled) {
@@ -134,11 +130,11 @@ class Console {
         return element;
     }
 
-    private msg(event: Events) {
+    private msg(event: ServerEvents) {
         return $(`<span class="message ${event}" data-event="${event}">`);
     }
 
-    private record(message: JQuery<HTMLElement>, event: Events): void {
+    private record(message: JQuery<HTMLElement>, event: ServerEvents): void {
         let currentTime = new Date().toLocaleTimeString();
 
         this.colorize(event, $(`

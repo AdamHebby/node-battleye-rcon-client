@@ -9,7 +9,7 @@ import ServerRepository from "./Repository/ServerRepository";
 import Server from './Models/Server';
 import { data } from 'jquery';
 import Ban from './Models/Ban';
-import Events from "./Events";
+import ServerEvents from "./ServerEvents";
 import { open } from 'openurl';
 import { exec } from 'child_process';
 import SettingsRepository from './Repository/SettingsRepository';
@@ -97,7 +97,7 @@ class BattleEyeSocketRelay {
             if (relay.rcon !== null && relay.cachedAuth !== null) {
                 relay.socketSend({
                     id: null,
-                    type: Events.RCON_CONNECT,
+                    type: ServerEvents.RCON_CONNECT,
                     data: {
                         id: relay.cachedAuth.id,
                     }
@@ -109,17 +109,17 @@ class BattleEyeSocketRelay {
                 console.log(`${new Date().toLocaleTimeString()}: Received: ${msg.toString()}`);
 
                 try {
-                    if (message.type === Events.SETTINGS_LIST) {
+                    if (message.type === ServerEvents.SETTINGS_LIST) {
                         relay.settings = relay.settingsRepo.get();
                         relay.socketSend({
                             id: message.id,
-                            type: Events.SETTINGS_LIST,
+                            type: ServerEvents.SETTINGS_LIST,
                             data: relay.settings
                         });
                         return;
                     }
 
-                    if (message.type === Events.SETTINGS_SAVE) {
+                    if (message.type === ServerEvents.SETTINGS_SAVE) {
                         let prev: Settings = Settings.fromJson(JSON.parse(JSON.stringify(relay.settings)));
                         let newSettings = Settings.fromJson(message.data.settings);
                         relay.settings = newSettings;
@@ -136,80 +136,80 @@ class BattleEyeSocketRelay {
 
                         relay.socketSend({
                             id: message.id,
-                            type: Events.SETTINGS_SAVE,
+                            type: ServerEvents.SETTINGS_SAVE,
                             data: true
                         });
                         return;
                     }
 
-                    if (message.type === Events.COLORS_LIST) {
+                    if (message.type === ServerEvents.COLORS_LIST) {
                         relay.socketSend({
                             id: message.id,
-                            type: Events.COLORS_LIST,
+                            type: ServerEvents.COLORS_LIST,
                             data: relay.consoleColorRepo.all()
                         });
                         return;
                     }
 
-                    if (message.type === Events.COLORS_SAVE) {
+                    if (message.type === ServerEvents.COLORS_SAVE) {
                         relay.consoleColorRepo.upsert(message.data);
                         relay.socketSend({
                             id: message.id,
-                            type: Events.COLORS_SAVE,
+                            type: ServerEvents.COLORS_SAVE,
                             data: true
                         });
                         relay.socketSend({
                             id: message.id,
-                            type: Events.COLORS_LIST,
+                            type: ServerEvents.COLORS_LIST,
                             data: relay.consoleColorRepo.all()
                         });
                         return;
                     }
 
-                    if (message.type === Events.SERVERS_LIST) {
+                    if (message.type === ServerEvents.SERVERS_LIST) {
                         relay.socketSend({
                             id: message.id,
-                            type: Events.SERVERS_LIST,
+                            type: ServerEvents.SERVERS_LIST,
                             data: relay.serverRepo.all()
                         });
                         return;
                     }
 
-                    if (message.type === Events.SERVERS_SAVE) {
+                    if (message.type === ServerEvents.SERVERS_SAVE) {
                         message.data.forEach((server: Server) => {
                             relay.serverRepo.upsert(server);
                         });
 
                         relay.socketSend({
                             id: message.id,
-                            type: Events.SERVERS_SAVE,
+                            type: ServerEvents.SERVERS_SAVE,
                             data: true
                         });
 
                         relay.socketSend({
                             id: null,
-                            type: Events.SERVERS_LIST,
+                            type: ServerEvents.SERVERS_LIST,
                             data: relay.serverRepo.all()
                         });
                         return;
                     }
 
-                    if (message.type === Events.SERVER_DELETE) {
+                    if (message.type === ServerEvents.SERVER_DELETE) {
                         relay.serverRepo.delete(message.data.id);
                         relay.socketSend({
                             id: message.id,
-                            type: Events.SERVER_DELETE,
+                            type: ServerEvents.SERVER_DELETE,
                             data: true
                         });
                         relay.socketSend({
                             id: null,
-                            type: Events.SERVERS_LIST,
+                            type: ServerEvents.SERVERS_LIST,
                             data: relay.serverRepo.all()
                         });
                         return;
                     }
 
-                    if (message.type === Events.RCON_CONNECT) {
+                    if (message.type === ServerEvents.RCON_CONNECT) {
                         if (relay.rcon !== null) {
                             return;
                         }
@@ -223,7 +223,7 @@ class BattleEyeSocketRelay {
                         relay.getBattleEyeClient(s);
                         relay.socketSend({
                             id: message.id,
-                            type: Events.RCON_CONNECT,
+                            type: ServerEvents.RCON_CONNECT,
                             data: {
                                 id: relay.cachedAuth?.id,
                             }
@@ -231,41 +231,41 @@ class BattleEyeSocketRelay {
                         return;
                     }
 
-                    if (message.type === Events.RCON_DISCONNECT) {
+                    if (message.type === ServerEvents.RCON_DISCONNECT) {
                         relay.stopTimers();
                         relay.cachedAuth = null;
                         relay.rcon?.close();
                         relay.socketSend({
                             id: message.id,
-                            type: Events.RCON_DISCONNECT,
+                            type: ServerEvents.RCON_DISCONNECT,
                             data: true
                         });
                         return;
                     }
 
-                    if (message.type === Events.PLAYERS) {
+                    if (message.type === ServerEvents.PLAYERS) {
                         relay.command("players");
                         return;
                     }
 
-                    if (message.type === Events.BANS) {
+                    if (message.type === ServerEvents.BANS) {
                         relay.command("bans");
                         return;
                     }
 
-                    if (message.type === Events.ADMINS) {
+                    if (message.type === ServerEvents.ADMINS) {
                         relay.command("admins");
                         return;
                     }
 
-                    if (message.type === Events.CHAT_ADMIN_MESSAGE) {
+                    if (message.type === ServerEvents.CHAT_ADMIN_MESSAGE) {
                         if (message.data?.message !== undefined && message.data.message.trim() !== '') {
                             relay.command(`say -1 ${message.data.message}`);
                         }
                         return;
                     }
 
-                    if (message.type === Events.CHAT_PRIVATE_MESSAGE) {
+                    if (message.type === ServerEvents.CHAT_PRIVATE_MESSAGE) {
                         if (message.data?.id === undefined || message.data.id < 0) {
                             console.log('ERR: Invalid ID');
                             return;
@@ -294,15 +294,15 @@ class BattleEyeSocketRelay {
                         return;
                     }
 
-                    if (message.type === Events.USER_BAN) {
+                    if (message.type === ServerEvents.USER_BAN) {
                         return;
                     }
 
-                    if (message.type === Events.USER_UNBAN) {
+                    if (message.type === ServerEvents.USER_UNBAN) {
                         return;
                     }
 
-                    if (message.type === Events.USER_KICK) {
+                    if (message.type === ServerEvents.USER_KICK) {
                         if (message.data?.id === undefined || message.data.id < 0) {
                             return;
                         }
@@ -323,12 +323,12 @@ class BattleEyeSocketRelay {
                         return;
                     }
 
-                    if (message.type === Events.SET_COMMENT) {
+                    if (message.type === ServerEvents.SET_COMMENT) {
                         relay.playersRepo.updateComment(message.data.id, message.data.comment);
                         return;
                     }
 
-                    if (message.type === Events.SET_NICKNAME) {
+                    if (message.type === ServerEvents.SET_NICKNAME) {
                         relay.playersRepo.updateNickname(message.data.id, message.data.nickname);
                         return;
                     }
@@ -336,7 +336,7 @@ class BattleEyeSocketRelay {
                     console.trace(`${new Date().toLocaleTimeString()}: ERROR: ${error}`);
                     relay.socketSend({
                         id: message.id,
-                        type: Events.SOCK_ERROR,
+                        type: ServerEvents.SOCK_ERROR,
                         data: error.toString()
                     });
                 }
@@ -368,7 +368,7 @@ class BattleEyeSocketRelay {
             this.rcon.sendCommand(data);
         } catch (error) {
             this.socketSend({
-                type: Events.SOCK_ERROR,
+                type: ServerEvents.SOCK_ERROR,
                 data: error
             });
         }
@@ -384,7 +384,7 @@ class BattleEyeSocketRelay {
             }
 
             data = {
-                type: Events.MESSAGE,
+                type: ServerEvents.MESSAGE,
                 data: data
             };
         }
@@ -462,7 +462,7 @@ class BattleEyeSocketRelay {
         this.rcon?.messageHandler = function (message: string) {
             if (message === 'Login Failed') {
                 relay.socketSend({
-                    type: Events.CHAT_ERROR,
+                    type: ServerEvents.CHAT_ERROR,
                     data: message
                 });
 
@@ -471,7 +471,7 @@ class BattleEyeSocketRelay {
                 relay.rcon?.close();
                 relay.socketSend({
                     id: null,
-                    type: Events.RCON_DISCONNECT,
+                    type: ServerEvents.RCON_DISCONNECT,
                     data: true
                 });
                 return;
@@ -484,7 +484,7 @@ class BattleEyeSocketRelay {
 
                 let player = relay.playersRepo.findByGuid(m[1]);
                 relay.socketSend({
-                    type: Events.USER_KICK,
+                    type: ServerEvents.USER_KICK,
                     data: {
                         player: player,
                     }
@@ -495,7 +495,7 @@ class BattleEyeSocketRelay {
             if (message.match(/^RCon admin \#\d+: \(To (.*?)\) (.*?)$/)) {
                 // let m = message.match(/^RCon admin \#\d+: \(To (.*?)\) (.*?)$/) || [];
                 relay.socketSend({
-                    type: Events.CHAT_PRIVATE_MESSAGE,
+                    type: ServerEvents.CHAT_PRIVATE_MESSAGE,
                     data: message
                 });
                 return;
@@ -508,7 +508,7 @@ class BattleEyeSocketRelay {
             if (message.startsWith('(Global) ')) {
                 // let m = message.match(/^\(Global\) (Survivor.*?): (.*)$/) || [];
                 relay.socketSend({
-                    type: Events.CHAT_GLOBAL_MESSAGE,
+                    type: ServerEvents.CHAT_GLOBAL_MESSAGE,
                     data: message
                 });
                 return;
@@ -516,7 +516,7 @@ class BattleEyeSocketRelay {
 
             if (message.match(/^RCon admin \#\d+: \(Global\) /)) {
                 relay.socketSend({
-                    type: Events.CHAT_ADMIN_MESSAGE,
+                    type: ServerEvents.CHAT_ADMIN_MESSAGE,
                     data: message
                 });
                 return;
@@ -529,7 +529,7 @@ class BattleEyeSocketRelay {
                 let ip: string = m[3].split(':')[0];
 
                 relay.socketSend({
-                    type: Events.CHAT_PLAYER_JOIN,
+                    type: ServerEvents.CHAT_PLAYER_JOIN,
                     data: {
                         id: id,
                         ip: ip,
@@ -554,7 +554,7 @@ class BattleEyeSocketRelay {
                 }
 
                 relay.socketSend({
-                    type: Events.CHAT_PLAYER_LEAVE,
+                    type: ServerEvents.CHAT_PLAYER_LEAVE,
                     data: {
                         id: parseInt(m[1]),
                         ip: m[2],
@@ -589,7 +589,7 @@ class BattleEyeSocketRelay {
                 relay.cacheRepo.set('players', players);
 
                 relay.socketSend({
-                    type: Events.PLAYERS,
+                    type: ServerEvents.PLAYERS,
                     data: {
                         players: players,
                         playerRecords: playerRecords
@@ -600,7 +600,7 @@ class BattleEyeSocketRelay {
 
             if (message.includes('GUID Bans:')) {
                 relay.socketSend({
-                    type: Events.BANS,
+                    type: ServerEvents.BANS,
                     data: relay.parseBanData(message)
                 })
                 return;
@@ -609,7 +609,7 @@ class BattleEyeSocketRelay {
             if (message.match(/^RCon admin \#\d+ \(.*?\) logged in$/) !== null) {
                 // let m: string[] = message.match(/^RCon admin \#(\d+) \((.*?\)) logged in$/) || [];
                 relay.socketSend({
-                    type: Events.CHAT_ADMIN_JOIN,
+                    type: ServerEvents.CHAT_ADMIN_JOIN,
                     data: message
                 });
                 return;
@@ -631,7 +631,7 @@ class BattleEyeSocketRelay {
                     });
 
                     relay.socketSend({
-                        type: Events.ADMINS,
+                        type: ServerEvents.ADMINS,
                         data: admins
                     });
                 }
@@ -641,7 +641,7 @@ class BattleEyeSocketRelay {
             if (message.match(/^RCon admin \#\d+ \(.*?\) logged out$/) !== null) {
                 let m: string[] = message.match(/^RCon admin \#(\d+) \((.*?)\) logged in$/) || [];
                 relay.socketSend({
-                    type: Events.CHAT_ADMIN_LEAVE,
+                    type: ServerEvents.CHAT_ADMIN_LEAVE,
                     data: message
                 });
                 return;

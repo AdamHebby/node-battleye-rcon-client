@@ -1,4 +1,4 @@
-enum Events {
+enum ServerEvents {
     MESSAGE = 'message',
     SOCK_OPEN = 'sock_open',
     SOCK_CLOSE = 'sock_close',
@@ -42,4 +42,4 @@ enum Events {
     SET_NICKNAME = 'set_nickname',
 }
 
-export default Events;
+export default ServerEvents;

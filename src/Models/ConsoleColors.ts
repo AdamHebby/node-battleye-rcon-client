@@ -1,11 +1,11 @@
-import Events from "../Events";
+import ServerEvents from "../ServerEvents";
 
 class ConsoleColor {
-    public event: Events;
+    public event: ServerEvents;
     public color: string;
     public enabled: boolean|number;
 
-    public constructor(event: Events, color: string, enabled: boolean) {
+    public constructor(event: ServerEvents, color: string, enabled: boolean) {
         this.event = event;
         this.color = color;
         this.enabled = enabled;

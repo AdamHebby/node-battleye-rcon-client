@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { ConsoleColor } from '../Models/ConsoleColors';
-import Events from '../Events';
+import ServerEvents from '../ServerEvents';
 
 class ConsoleColorManager {
     public static instance: ConsoleColorManager;
@@ -19,7 +19,7 @@ class ConsoleColorManager {
             let enabled     = $(this).find('input[type="checkbox"]').is(':checked') as boolean;
             let color       = $(this).find('input[type="color"]').val() as string;
 
-            self.consoleColors.push(new ConsoleColor(eventConfig as Events, color, enabled));
+            self.consoleColors.push(new ConsoleColor(eventConfig as ServerEvents, color, enabled));
         });;
 
         $(this.consoleColorsConfigForm).on('change', 'input', (event) => {
