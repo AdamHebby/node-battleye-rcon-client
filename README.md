@@ -24,6 +24,7 @@ This will never require anything to exist on the server, and will never require 
  - Customizable settings and terminal colors
 
 ## Upcoming Features / TODO
+ - Add hover state for console logs to show referenced user
  - Refactoring run_server and event handling - main 2 areas of concern
  - Testing? (Need to mock the RCon server - easier said than done when dealing with UDP. Need to write an interface and overload it for testing I think.)
  - Clean up UI
@@ -39,6 +40,7 @@ This will never require anything to exist on the server, and will never require 
  - Better logging
  - Docker support
  - Better Windows Support (Using winreg to obfuscate the DB encryption key)
+ - Notifications for certain events
 
 ## Screenshots
 
