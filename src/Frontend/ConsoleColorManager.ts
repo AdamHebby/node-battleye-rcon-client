@@ -20,7 +20,7 @@ class ConsoleColorManager {
             let color       = $(this).find('input[type="color"]').val() as string;
 
             self.consoleColors.push(new ConsoleColor(eventConfig as ServerEvents, color, enabled));
-        });;
+        });
 
         $(this.consoleColorsConfigForm).on('change', 'input', (event) => {
             let inputTr     = $(event.target).closest('.color-group');
@@ -71,7 +71,6 @@ class ConsoleColorManager {
         this.consoleColors = JSON.parse(JSON.stringify(colors));
         this.onUpdate(colors);
         this.render(colors);
-
 
         return colors;
     }
