@@ -1,5 +1,5 @@
 {
-  "name": "dayz-dart",
+  "name": "node-battleye-rcon-client",
   "version": "1.0.0",
   "description": "",
   "main": "build/run_server.js",
