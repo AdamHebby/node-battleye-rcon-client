@@ -1,6 +1,7 @@
 // const sqlite3 = require('@journeyapps/sqlcipher');
 import fs from "fs";
 import Database, { Database as DB } from "better-sqlite3";
+import Registry from "winreg";
 
 abstract class AbstractRepository
 {
@@ -91,44 +92,52 @@ abstract class AbstractRepository
     }
 
     private storePassword(password: string) {
-        // try {
-        //     let regKey = new Registry({
-        //         hive: Registry.HKCU,
-        //         key:  '\\Software\\Software\\Nart\\CurrentVersion'
-        //     });
+        try {
+            (new Registry({
+                hive: Registry.HKCU,
+                key:  '\\Software\\Nart'
+            })).create(() => {});
 
-        //     regKey.set('db_key', 'REG_SZ', password, (e) => {
-        //         console.error(e);
-        //     });
-        // } catch (error) {
+            let regKey = new Registry({
+                hive: Registry.HKCU,
+                key:  '\\Software\\Nart\\CurrentVersion'
+            });
+
+            regKey.create(() => {});
+
+            regKey.set('db_key', 'REG_SZ', password, (e) => {
+                console.error(e);
+            });
+        } catch (error) {
             fs.writeFileSync(process.env.HOME + '/.nart', password);
-        // }
+        }
     }
 
     private getPassword(): string|null {
         let password = null;
+
+        try {
+            let regKey = new Registry({
+                hive: Registry.HKCU,
+                key:  '\\Software\\Nart\\CurrentVersion'
+            });
+
+            if (regKey.valueExists('db_key', () => {})) {
+                regKey.get('db_key', (_, res) => {
+                    if (res?.value !== undefined) {
+                        return res.value;
+                    }
+                });
+            }
+        } catch (error) {
+
+        }
 
         if (fs.existsSync(process.env.HOME + '/.nart')) {
             return fs.readFileSync(process.env.HOME + '/.nart').toString();
         }
 
         return password;
-
-        // try {
-        //     let regKey = new Registry({
-        //         hive: Registry.HKCU,
-        //         key:  '\\Software\\Software\\Nart\\CurrentVersion'
-        //     });
-
-        //     if (regKey.valueExists('db_key', () => {})) {
-        //         return regKey.create
-        //     }
-
-        //     return regKey.get('db_key', () => {}). ?? null;
-        // } catch (error) {
-        // }
-
-        return null;
     }
 }
 
