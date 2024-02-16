@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html class="h-100" lang="en" data-bs-theme="dark">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>NART</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            .tab {
+                display: none;
+            }
+            .tab.default-active {
+                display: block;
+            }
+            .console-container {
+                height: 300px;
+            }
+            #console {
+                overflow-y: scroll;
+                max-height: 300px;
+                background: #131313;
+                color: #98ea5f;
+                padding: 10px;
+            }
+            #autoscroll-toggle {
+                position: absolute;
+                bottom: 75px;
+                right: 50px;
+                display: inline-block;
+                width: 50px;
+                padding: 0;
+                height: 50px;
+                font-size: 50px;
+                cursor: pointer;
+                color: #0d6efd;
+            }
+
+            #autoscroll-toggle.disabled {
+                color: #6c757d;
+            }
+            #settings-servers-list .dirty > td, div.dirty {
+                background: #270000;
+            }
+
+            .color-group {
+                border: 1px solid #495057;
+                border-radius: 10px;
+                padding: 10px 10px 15px 10px;
+                padding-left: 60px;
+            }
+
+            .color-group > label {
+                margin-left: 15px;
+                margin-top: 5px;
+            }
+
+            .color-group > input[type="checkbox"] {
+                margin-top: 10px;
+            }
+
+            .color-group > input[type="color"] {
+                width: 60px;
+                float: right;
+                height: 35px;
+            }
+
+            .survivor-row[data-connected="true"] > td {
+                background: rgb(0 38 0 / 38%);
+            }
+
+            /* .survivor-row[data-connected="true"][data-status="alive"] > td:nth-of-type(4)::after {
+                color: green;
+                content: "•";
+                font-size: 50px;
+                line-height: 15px;
+                height: 10px;
+                float: right;
+            }
+
+            .survivor-row[data-connected="true"][data-status="lobby"] > td:nth-of-type(4)::before {
+                color: orange;
+                content: "•";
+                font-size: 50px;
+                line-height: 15px;
+                height: 10px;
+                float: right;
+            } */
+        </style>
+    </head>
+    <body class="h-100">
+        <div class="container-fluid h-100">
+            <div class="row h-100">
+                <div class="col-2 col-xxl-1 mt-5">
+                    <div class="mb-4">
+                        <select id="server-selection" class="form-select" aria-label="SERVER SELECT">
+                            <option value="0" selected>Loading...</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <button id="server-connect" class="btn btn-primary w-100" disabled>Connect</button>
+                    </div>
+                    <div class="mb-2">
+                        <button id="server-disconnect" class="btn btn-danger w-100" disabled>Disconnect</button>
+                    </div>
+                    <div class="mb-5">
+                        <div class="text-center">Last Refresh: <span id="server-refresh-status" data-seconds="0">Never</span></div>
+                        <div class="progress">
+                            <div id="server-refresh-progress" class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" disabled></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="btn-group dropend w-100">
+                            <button type="button" class="btn btn-warning w-100 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Execute</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" id="action-reload-scripts">Reload Scripts</a></li>
+                                <li><a class="dropdown-item" href="#" id="action-reload-bans">Reload Bans</a></li>
+                                <li><a class="dropdown-item" href="#" id="action-reload-events">Reload Events</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="action-lock-server">Lock Server</a></li>
+                                <li><a class="dropdown-item" href="#" id="action-unlock-server">Unlock Server</a></li>
+                                <li><a class="dropdown-item" href="#" id="action-shutdown-server">Shutdown Server</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <button id="server-settings" class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#server-settings-modal">Settings</button>
+                    </div>
+                </div>
+                <div class="col-10 col-xxl-11 border-start border-2 border-dark">
+                    <div class="container-fluid d-flex flex-column h-100">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <ul class="nav nav-tabs">
+                                            <li class="nav-item">
+                                                <a class="nav-link active" data-tab-control-group="primary" data-tab-control="players" aria-current="page" href="#">Players</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-tab-control-group="primary" data-tab-control="bans" href="#">Bans</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-tab-control-group="primary" data-tab-control="players-db" href="#">Player Database</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <span class="badge bg-primary">Players: <span id="server-info-players">0</span></span>
+                                        <span class="badge bg-danger">Admins: <span id="server-info-admins">0</span></span>
+                                        <span class="badge bg-info">Bans: <span id="server-info-bans">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="flex: 1 1 auto;">
+                            <div class="tab default-active" data-tab="players" data-tab-group="primary">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">ID</th>
+                                                <th scope="col">IP</th>
+                                                <th scope="col">Ping</th>
+                                                <th scope="col">GUID</th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="server-players">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab" data-tab="bans" data-tab-group="primary">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">ID</th>
+                                                <th scope="col">GUID / IP</th>
+                                                <th scope="col">Minutes Left</th>
+                                                <th scope="col">Reason</th>
+                                                <th scope="col">Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="server-bans">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab" data-tab="players-db" data-tab-group="primary">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">ID</th>
+                                                <th scope="col">GUID</th>
+                                                <th scope="col">Last IP</th>
+                                                <th scope="col">Last Server Seen</th>
+                                                <th scope="col">Last Date</th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Nickname</th>
+                                                <th scope="col">Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="players-db">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row console-container">
+                            <div class="col-12 d-flex flex-column">
+                                <div class="row flex-grow-1">
+                                    <div class="col-12 d-flex">
+                                        <div id="console" class="flex-grow-1"></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div id="console-input" class="d-flex mb-3">
+                                            <select id="console-input-mode" class="form-select" aria-label="Mode" style="width: 150px">
+                                                <option value="0">Console</option>
+                                                <option value="1" selected>Global Chat</option>
+                                            </select>
+                                            <input type="text" id="console-input-text" class="form-control" placeholder="Enter your command here">
+                                        </div>
+                                        <div id="autoscroll-toggle"><i class="bi bi-arrow-down-circle-fill"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap popup menus -->
+        <div class="modal modal-xl fade" id="server-settings-modal" tabindex="-1" aria-labelledby="server-settings-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="server-settings-modal-label">Server Settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="server-settings-modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-tab-control-group="settings" data-tab-control="settings-general" aria-current="page" href="#">General</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-tab-control-group="settings" data-tab-control="settings-servers" href="#">Servers</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-tab-control-group="settings" data-tab-control="settings-chat-colors" href="#">Chat Colors</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="row" style="flex: 1 1 auto;">
+                                <div class="tab default-active" data-tab="settings-general" data-tab-group="settings">
+                                    <form id="settings-config-form" class="form container mt-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <h4>Application Settings</h4>
+                                                </div>
+                                                <!-- Player Refresh interval -->
+                                                <div class="form-group mb-2">
+                                                    <label for="players-refresh-interval" class="form-label">Players Refresh Interval</label>
+                                                    <input type="number" class="form-control" name="players-refresh-interval" value="5" min="3" max="180">
+                                                </div>
+                                                <!-- Ban Refresh Interval -->
+                                                <div class="form-group mb-2">
+                                                    <label for="bans-refresh-interval" class="form-label">Bans Refresh Interval</label>
+                                                    <input type="number" class="form-control" name="bans-refresh-interval" value="5" min="3" max="180">
+                                                </div>
+                                                <!-- Admins Refresh Interval -->
+                                                <div class="form-group mb-2">
+                                                    <label for="admins-refresh-interval" class="form-label">Admins Refresh Interval</label>
+                                                    <input type="number" class="form-control" name="admins-refresh-interval" value="5" min="3" max="180">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <h4>Chat Settings</h4>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="debug-messages" checked>
+                                                    <label class="form-check-label" for="debug-messages">Debug messages</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="error-messages" checked>
+                                                    <label class="form-check-label" for="error-messages">Error Messages</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="global-chat-messages" checked>
+                                                    <label class="form-check-label" for="global-chat-messages">Global Chat Messages</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="admin-chat-messages" checked>
+                                                    <label class="form-check-label" for="admin-chat-messages">Admin Chat Messages</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="admin-join-leave-messages" checked>
+                                                    <label class="form-check-label" for="admin-join-leave-messages">Admin Join / Leave Messages</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="player-join-leave-messages" checked>
+                                                    <label class="form-check-label" for="player-join-leave-messages">Player Join / Leave Messages</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="color-chat" checked>
+                                                    <label class="form-check-label" for="color-chat">Color Chat</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <div class="modal-footer mt-5">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-target="#server-settings-modal">Close</button>
+                                        <button type="button" class="btn btn-primary" id="settings-config-save">Save changes</button>
+                                    </div>
+                                </div>
+                                <div class="tab" data-tab="settings-servers" data-tab-group="settings">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Name</th>
+                                                    <th scope="col">Host</th>
+                                                    <th scope="col">Port</th>
+                                                    <th scope="col">Password</th>
+                                                    <th scope="col">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="settings-servers-list">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="btn btn-success" id="settings-servers-add">Add Server</div>
+
+                                    <div class="modal-footer mt-5">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-target="#server-settings-modal">Close</button>
+                                        <button type="button" class="btn btn-warning" id="settings-servers-reset" disabled>Reset</button>
+                                        <button type="button" class="btn btn-primary" id="settings-servers-save" disabled>Save changes</button>
+                                    </div>
+                                </div>
+                                <div class="tab" data-tab="settings-chat-colors" data-tab-group="settings">
+                                    <form id="settings-chat-colors-form" class="form container mt-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-check form-switch mb-2 color-group" data-event="MESSAGE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_MESSAGE" checked>
+                                                    <label class="form-check-label" for="CC_MESSAGE">Message</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_MESSAGE_COLOR" data-default="#a4e363" value="#a4e363" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="SOCK_OPEN">
+                                                    <input class="form-check-input" type="checkbox" id="CC_SOCK_OPEN" checked>
+                                                    <label class="form-check-label" for="CC_SOCK_OPEN">Socket Connect</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_SOCK_OPEN_COLOR" data-default="#397d28" value="#397d28" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="SOCK_CLOSE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_SOCK_CLOSE" checked>
+                                                    <label class="form-check-label" for="CC_SOCK_CLOSE">Socket Disconnect</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_SOCK_CLOSE_COLOR" data-default="#a14914" value="#a14914" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="SOCK_ERROR">
+                                                    <input class="form-check-input" type="checkbox" id="CC_SOCK_ERROR" checked>
+                                                    <label class="form-check-label" for="CC_SOCK_ERROR">Socket Error</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_SOCK_ERROR_COLOR" data-default="#73190a" value="#73190a" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="SOCK_RECONNECT">
+                                                    <input class="form-check-input" type="checkbox" id="CC_SOCK_RECONNECT" checked>
+                                                    <label class="form-check-label" for="CC_SOCK_RECONNECT">Socket Reconnect</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_SOCK_RECONNECT_COLOR" data-default="#397d28" value="#397d28" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="RCON_CONNECT">
+                                                    <input class="form-check-input" type="checkbox" id="CC_RCON_CONNECT" checked>
+                                                    <label class="form-check-label" for="CC_RCON_CONNECT">RCon Connect</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_RCON_CONNECT_COLOR" data-default="#397d28" value="#397d28" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="RCON_DISCONNECT">
+                                                    <input class="form-check-input" type="checkbox" id="CC_RCON_DISCONNECT" checked>
+                                                    <label class="form-check-label" for="CC_RCON_DISCONNECT">RCon Disconnect</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_RCON_DISCONNECT_COLOR" data-default="#a14914" value="#a14914" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="RCON_RECONNECT">
+                                                    <input class="form-check-input" type="checkbox" id="CC_RCON_RECONNECT" checked>
+                                                    <label class="form-check-label" for="CC_RCON_RECONNECT">RCon Reconnect</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_RCON_RECONNECT_COLOR" data-default="#397d28" value="#397d28" title="Choose your color">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_DEBUG">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_DEBUG" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_DEBUG">Debug</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_DEBUG_COLOR" data-default="#71f9df" value="#71f9df" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_ERROR">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_ERROR" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_ERROR">Error</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_ERROR_COLOR" data-default="#73190a" value="#73190a" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_GLOBAL_MESSAGE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_GLOBAL_MESSAGE" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_GLOBAL_MESSAGE">Global Messages</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_GLOBAL_MESSAGE_COLOR" data-default="#a4e363" value="#a4e363" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_ADMIN_MESSAGE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_ADMIN_MESSAGE" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_ADMIN_MESSAGE">Admin messages</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_ADMIN_MESSAGE_COLOR" data-default="#f7d935" value="#f7d935" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_ADMIN_JOIN">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_ADMIN_JOIN" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_ADMIN_JOIN">Admin Join</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_ADMIN_JOIN_COLOR" data-default="#b19b26" value="#b19b26" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_ADMIN_LEAVE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_ADMIN_LEAVE" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_ADMIN_LEAVE">Admin Leave</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_ADMIN_LEAVE_COLOR" data-default="#ac8220" value="#ac8220" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_PLAYER_JOIN">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_PLAYER_JOIN" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_PLAYER_JOIN">Player Join</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_PLAYER_JOIN_COLOR" data-default="#7db940" value="#7db940" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_PLAYER_LEAVE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_PLAYER_LEAVE" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_PLAYER_LEAVE">Player Leave</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_PLAYER_LEAVE_COLOR" data-default="#d9e566" value="#d9e566" title="Choose your color">
+                                                </div>
+                                                <div class="form-check form-switch mb-2 color-group" data-event="CHAT_PRIVATE_MESSAGE">
+                                                    <input class="form-check-input" type="checkbox" id="CC_CHAT_PRIVATE_MESSAGE" checked>
+                                                    <label class="form-check-label" for="CC_CHAT_PRIVATE_MESSAGE">Private Message</label>
+                                                    <input type="color" class="form-control form-control-color" id="CC_CHAT_PRIVATE_MESSAGE_COLOR" data-default="#1822f8" value="#1822f8" title="Choose your color">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <div class="modal-footer mt-5">
+                                        <button type="button" class="btn btn-danger me-4" id="settings-colors-default">Default</button>
+                                        <button type="button" class="btn btn-info" id="settings-colors-copy">Copy</button>
+                                        <button type="button" class="btn btn-warning me-4" id="settings-colors-paste" data-bs-target="#modal-paste-color-settings" data-bs-toggle="modal">Paste</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-target="#server-settings-modal">Close</button>
+                                        <button type="button" class="btn btn-danger" id="settings-colors-reset">Discard Changes</button>
+                                        <button type="button" class="btn btn-primary" id="settings-colors-save">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal modal-md fade" id="modal-paste-color-settings" tabindex="-1" aria-labelledby="modal-paste-color-settings-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal-paste-color-settings-label">Paste Color Settings</h5>
+                        <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#server-settings-modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p>Note: You get a chance to view the color settings on the next page, you will still need to hit "save changes" to actually apply them.</p>
+                        <textarea id="paste-color-settings" class="form-control" rows="5" placeholder="Paste your color settings here"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#server-settings-modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="paste-color-settings-save" data-bs-target="#server-settings-modal">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal modal-md fade" data-modal-managed="true" id="modal-input-form" tabindex="-1" aria-labelledby="#modal-input-form-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal-input-form-label"></h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <h5 class="modal-text"></h5>
+                        <div class="modal-form mt-4"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modal-input-form">Cancel</button>
+                        <button type="button" class="btn btn-success modal-confirm" data-bs-toggle="modal" data-bs-target="#modal-input-form">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </body>
+</html>
