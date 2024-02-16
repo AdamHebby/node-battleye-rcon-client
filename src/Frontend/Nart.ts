@@ -1,6 +1,5 @@
 // @ts-ignore
 import Ban from "../Models/Ban";
-import Server from "../Models/Server";
 import $ from "jquery";
 import { EventEmitter } from "events";
 import ServerEvents from "../ServerEvents";
@@ -11,6 +10,7 @@ import Console from "./Console";
 
 // https://www.battleye.com/support/documentation/
 class Nart {
+    public static WEBSOCKET_URL = 'ws://localhost:12639';
     public static instance: Nart;
     public socket: WebSocket | null;
     public serverId: null|number = null;
@@ -20,9 +20,6 @@ class Nart {
     public reconnectTimer: VariableTimer;
 
     private lastAutoRefreshPlayers: number = new Date().getTime();
-    private callbacks: any = {};
-
-    public static WEBSOCKET_URL = 'ws://localhost:12639';
 
     public constructor() {
         this.socket = new WebSocket(Nart.WEBSOCKET_URL);
@@ -67,7 +64,7 @@ class Nart {
             };
 
             Console.getInstance().onCommand = (message: string) => {
-                // this.sendCommand(Events.);
+                this.sendCommand(ServerEvents.CUSTOM, {command: message});
                 console.log('Command: ' + message);
             };
         };
@@ -93,15 +90,6 @@ class Nart {
 
         this.socket.onmessage = (event: MessageEvent) => {
             let data = JSON.parse(event.data);
-
-            if (!ignoreLogEvents.includes(data.type)) {
-                Console.getInstance().logEvent(data.type, data);
-            }
-
-            if (data.type === ServerEvents.VERSION) {
-                this.eventEmitter.emit(ServerEvents.VERSION, data.data);
-                return;
-            }
 
             if (data.type === ServerEvents.CHAT_PLAYER_JOIN) {
                 this.eventEmitter.emit(ServerEvents.CHAT_PLAYER_JOIN, data.data);
@@ -156,16 +144,6 @@ class Nart {
                 return;
             }
 
-            // if (data.type === Events.SOCK_ERROR) {
-            //     Console.getInstance().logEvent(Events.SOCK_ERROR, data.data);
-            //     return;
-            // }
-
-            // if (data.type === Events.MESSAGE) {
-            //     Console.getInstance().logEvent(Events.MESSAGE, data.data);
-            //     return;
-            // }
-
             if (data.type === ServerEvents.PLAYERS) {
                 this.lastAutoRefreshPlayers = new Date().getTime();
                 let players = data.data;
@@ -186,24 +164,26 @@ class Nart {
                 return;
             }
 
+            if (data.type === ServerEvents.VERSION) {
+                this.eventEmitter.emit(ServerEvents.VERSION, data.data);
+                return;
+            }
+
             if (data.type === ServerEvents.RCON_DISCONNECT) {
                 this.autoRefreshPlayersInterval.stop();
                 this.eventEmitter.emit(ServerEvents.RCON_DISCONNECT);
+                return;
             }
 
             if (data.type === ServerEvents.RCON_CONNECT) {
                 this.serverId = data.data.id;
                 this.eventEmitter.emit(ServerEvents.RCON_CONNECT, this.serverId);
                 this.autoRefreshPlayersInterval.start(500);
+                return;
             }
 
-            if (this.callbacks[data.type] !== undefined) {
-                this.callbacks[data.type](data);
-            }
-
-            if (this.callbacks[data.id] !== undefined) {
-                this.callbacks[data.id](data);
-                delete this.callbacks[data.id];
+            if (!ignoreLogEvents.includes(data.type)) {
+                Console.getInstance().logEvent(data.type, data);
             }
         }
     }
@@ -216,11 +196,7 @@ class Nart {
         return Nart.instance;
     }
 
-    public addListener(event: string, callable: CallableFunction): void {
-        this.callbacks[event] = callable;
-    }
-
-    public sendCommand(command: string, data: any, callable: CallableFunction|null = null): void {
+    public sendCommand(command: string, data: any = []): void {
         let id = Math.random().toString(36).substring(7);
 
         this.socket?.send(JSON.stringify({
@@ -228,10 +204,6 @@ class Nart {
             id: id,
             data: data
         }));
-
-        if (callable !== null) {
-            this.addListener(id, callable);
-        }
     }
 
     public connect(serverId: number) {

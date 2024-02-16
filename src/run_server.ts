@@ -109,6 +109,15 @@ class BattleEyeSocketRelay {
                 console.log(`${new Date().toLocaleTimeString()}: Received: ${msg.toString()}`);
 
                 try {
+                    if (message.type === ServerEvents.CUSTOM) {
+                        if (message.data.command === undefined || message.data.command.trim() === '') {
+                            return;
+                        }
+
+                        relay.command(message.data.command);
+                        return;
+                    }
+
                     if (message.type === ServerEvents.SETTINGS_LIST) {
                         relay.settings = relay.settingsRepo.get();
                         relay.socketSend({

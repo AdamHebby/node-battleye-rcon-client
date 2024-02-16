@@ -1,4 +1,5 @@
 enum ServerEvents {
+    CUSTOM = 'custom',
     MESSAGE = 'message',
     SOCK_OPEN = 'sock_open',
     SOCK_CLOSE = 'sock_close',

@@ -262,9 +262,9 @@ $(function () {
     });
 
     nart.eventEmitter.on(ServerEvents.SOCK_OPEN, function () {
-        nart.sendCommand(ServerEvents.SERVERS_LIST, []);
-        nart.sendCommand(ServerEvents.SETTINGS_LIST, []);
-        nart.sendCommand(ServerEvents.COLORS_LIST, []);
+        nart.sendCommand(ServerEvents.SERVERS_LIST);
+        nart.sendCommand(ServerEvents.SETTINGS_LIST);
+        nart.sendCommand(ServerEvents.COLORS_LIST);
 
         $('#server-connect').on('click', function (e) {
             e.preventDefault();
@@ -279,7 +279,7 @@ $(function () {
         $('#server-disconnect').on('click', function (e) {
             e.preventDefault();
 
-            nart.sendCommand(ServerEvents.RCON_DISCONNECT, []);
+            nart.sendCommand(ServerEvents.RCON_DISCONNECT);
         });
 
         $('#server-selection').on('change', function () {

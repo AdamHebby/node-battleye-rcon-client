@@ -24,10 +24,8 @@ class Console {
 
                 if (mode === 0) {
                     this.onCommand(message);
-                    this.logEvent(ServerEvents.CHAT_DEBUG, `Command: ${message}`);
                 } else {
                     this.onChat(message);
-                    this.logEvent(ServerEvents.CHAT_DEBUG, `Chat: ${message}`);
                 }
 
                 $('#console-input-text').val('');
@@ -128,10 +126,6 @@ class Console {
         }
 
         return element;
-    }
-
-    private msg(event: ServerEvents) {
-        return $(`<span class="message ${event}" data-event="${event}">`);
     }
 
     private record(message: JQuery<HTMLElement>, event: ServerEvents): void {
