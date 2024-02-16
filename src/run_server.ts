@@ -1,13 +1,12 @@
 import websocket from 'ws';
 // @ts-ignore
 import BattleEyeClient from 'battle-eye-client';
-import http, { RequestListener, ServerResponse } from "http";
-import fs, { readlinkSync } from "fs";
+import http, { ServerResponse } from "http";
+import fs from "fs";
 import dgram from "dgram";
 import Player from './Models/Player';
 import ServerRepository from "./Repository/ServerRepository";
 import Server from './Models/Server';
-import { data } from 'jquery';
 import Ban from './Models/Ban';
 import ServerEvents from "./ServerEvents";
 import { open } from 'openurl';
@@ -106,7 +105,6 @@ class BattleEyeSocketRelay {
 
             socket.on('message', function (msg: websocket.RawData) {
                 let message = JSON.parse(msg.toString());
-                console.log(`${new Date().toLocaleTimeString()}: Received: ${msg.toString()}`);
 
                 try {
                     if (message.type === ServerEvents.CUSTOM) {
@@ -203,6 +201,7 @@ class BattleEyeSocketRelay {
                         return;
                     }
 
+                    console.log(`${new Date().toLocaleTimeString()}: Received: ${msg.toString()}`);
                     if (message.type === ServerEvents.SERVER_DELETE) {
                         relay.serverRepo.delete(message.data.id);
                         relay.socketSend({
@@ -398,7 +397,18 @@ class BattleEyeSocketRelay {
             };
         }
 
-        console.log(`${new Date().toLocaleTimeString()}: RELAYING REPLY ${JSON.stringify(data)}`);
+        // make the logs less noisy for development
+        if (
+            'type' in data &&
+            data.type !== ServerEvents.PLAYERS &&
+            data.type !== ServerEvents.BANS &&
+            data.type !== ServerEvents.ADMINS &&
+            data.type !== ServerEvents.SETTINGS_LIST &&
+            data.type !== ServerEvents.COLORS_LIST &&
+            data.type !== ServerEvents.SERVERS_LIST
+        ) {
+            console.log(`${new Date().toLocaleTimeString()}: RELAYING REPLY ${JSON.stringify(data)}`);
+        }
 
         this.wss.clients.forEach(function (websocket) {
             websocket.send(JSON.stringify(data));
@@ -483,6 +493,70 @@ class BattleEyeSocketRelay {
                     type: ServerEvents.RCON_DISCONNECT,
                     data: true
                 });
+                return;
+            }
+
+            if (message.includes('Players on server:')) {
+                let players: Player[] = relay.parsePlayersData(message);
+
+                players.map((player: Player) => {
+                    let playerRecord = relay.playersRepo.findByGuid(player.guid);
+
+                    if (playerRecord === null) {
+                        playerRecord = PlayerRecord.fromPlayer(player);
+                    } else {
+                        playerRecord.lastSeen = relay.rcon?.ip ?? '';
+                        playerRecord.lastSeenDate = new Date();
+                    }
+
+                    player.syncRecord(playerRecord);
+                    relay.playersRepo.upsert(playerRecord);
+
+                    return player;
+                });
+
+                let playerRecords = relay.playersRepo.all();
+
+                relay.cacheRepo.set('players', players);
+
+                relay.socketSend({
+                    type: ServerEvents.PLAYERS,
+                    data: {
+                        players: players,
+                        playerRecords: playerRecords
+                    }
+                })
+                return;
+            }
+
+            if (message.includes('GUID Bans:')) {
+                relay.socketSend({
+                    type: ServerEvents.BANS,
+                    data: relay.parseBanData(message)
+                })
+                return;
+            }
+
+            if (message.startsWith('Connected RCon admins:')) {
+                let m = message.split('\n');
+                m.shift();
+                m.shift();
+                m.shift();
+
+                let admins = [];
+                for (let i = 0; i < m.length; i++) {
+                    let admin = m[i].trim().split(' ');
+                    admins.push({
+                        id: admin[0],
+                        ip: admin[1].split(':')[0],
+                        port: admin[1].split(':')[1]
+                    });
+
+                    relay.socketSend({
+                        type: ServerEvents.ADMINS,
+                        data: admins
+                    });
+                }
                 return;
             }
 
@@ -574,76 +648,12 @@ class BattleEyeSocketRelay {
                 return;
             }
 
-            if (message.includes('Players on server:')) {
-                let players: Player[] = relay.parsePlayersData(message);
-
-                players.map((player: Player) => {
-                    let playerRecord = relay.playersRepo.findByGuid(player.guid);
-
-                    if (playerRecord === null) {
-                        playerRecord = PlayerRecord.fromPlayer(player);
-                    } else {
-                        playerRecord.lastSeen = relay.rcon?.ip ?? '';
-                        playerRecord.lastSeenDate = new Date();
-                    }
-
-                    player.syncRecord(playerRecord);
-                    relay.playersRepo.upsert(playerRecord);
-
-                    return player;
-                });
-
-                let playerRecords = relay.playersRepo.all();
-
-                relay.cacheRepo.set('players', players);
-
-                relay.socketSend({
-                    type: ServerEvents.PLAYERS,
-                    data: {
-                        players: players,
-                        playerRecords: playerRecords
-                    }
-                })
-                return;
-            }
-
-            if (message.includes('GUID Bans:')) {
-                relay.socketSend({
-                    type: ServerEvents.BANS,
-                    data: relay.parseBanData(message)
-                })
-                return;
-            }
-
             if (message.match(/^RCon admin \#\d+ \(.*?\) logged in$/) !== null) {
                 // let m: string[] = message.match(/^RCon admin \#(\d+) \((.*?\)) logged in$/) || [];
                 relay.socketSend({
                     type: ServerEvents.CHAT_ADMIN_JOIN,
                     data: message
                 });
-                return;
-            }
-
-            if (message.startsWith('Connected RCon admins:')) {
-                let m = message.split('\n');
-                m.shift();
-                m.shift();
-                m.shift();
-
-                let admins = [];
-                for (let i = 0; i < m.length; i++) {
-                    let admin = m[i].trim().split(' ');
-                    admins.push({
-                        id: admin[0],
-                        ip: admin[1].split(':')[0],
-                        port: admin[1].split(':')[1]
-                    });
-
-                    relay.socketSend({
-                        type: ServerEvents.ADMINS,
-                        data: admins
-                    });
-                }
                 return;
             }
 
