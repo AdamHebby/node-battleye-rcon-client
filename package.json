@@ -6,7 +6,8 @@
   "scripts": {
     "build:server": "tsc --esModuleInterop --outDir build src/run_server.ts",
     "build:client": "npx webpack",
-    "build": "npm run build:server && npm run build:client"
+    "build": "npm run build:server && npm run build:client",
+    "start": "node build/run_server.js"
   },
   "author": "",
   "license": "ISC",
