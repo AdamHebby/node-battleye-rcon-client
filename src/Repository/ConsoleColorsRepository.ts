@@ -9,6 +9,10 @@ class ConsoleColorsRepository extends AbstractRepository
         let stmt = db.prepare('INSERT OR REPLACE INTO console_colors (event, color, enabled) VALUES (?, ?, ?)');
 
         colors.forEach(color => {
+            if (color.color === undefined || color.event === undefined) {
+                return;
+            }
+
             stmt.run(color.event, color.color, color.enabled ? 1 : 0);
         });
 

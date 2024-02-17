@@ -90,7 +90,7 @@ class Console {
     }
 
     public logEvent(event: ServerEvents, data: any = null) {
-        if (typeof data === 'object') {
+        if (typeof data === 'object' && data !== null) {
             if (typeof data.data === 'object') {
                 data = 'OBJECT: ' + JSON.stringify(data.data);
             } else {
@@ -112,10 +112,9 @@ class Console {
             data = 'No data provided';
         }
 
-        this.record(
-            $(`<span class="message ${event}" data-event="${event}">`).text(`${data}`),
-            event
-        );
+        let msg = $(`<span class="message ${event}" data-event="${event}">`).html(`${data}`);
+
+        this.record(msg, event);
     }
 
     private colorize(event: ServerEvents, element: JQuery<HTMLElement>): JQuery<HTMLElement> {

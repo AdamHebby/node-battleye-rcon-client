@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "build/run_server.js",
+  "repository": {},
   "scripts": {
     "build:server": "tsc --esModuleInterop --outDir build src/run_server.ts",
     "build:client": "npx webpack",
@@ -14,7 +15,7 @@
   "type": "commonjs",
   "dependencies": {
     "@journeyapps/sqlcipher": "^5.3.1",
-    "battle-eye-client": "^1.1.2",
+    "battle-eye-client": "git+https://github.com/AdamHebby/node-battle-eye-client.git#master",
     "better-sqlite3": "^9.4.1",
     "bootstrap": "^5.3.2",
     "crc-32": "^1.2.2",
@@ -31,6 +32,7 @@
     "winreg": "^1.2.5",
     "ws": "^8.16.0"
   },
+  "types": "./node_modules/battle-eye-client/index.d.ts",
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.9",
     "@types/bootstrap": "^5.2.10",

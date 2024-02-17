@@ -22,24 +22,23 @@ This will never require anything to exist on the server, and will never require 
  - Backend Socket Relay between web interface and Battleye. Helps with stability and security, but also UDP4 sockets are not supported in the browser.
  - Encrypted local database to store player data and server login credentials
  - Customizable settings and terminal colors
+ - Console log details - Shows player data in pop-ups against log messages
 
 ## Upcoming Features / TODO
- - Add hover state for console logs to show referenced user
- - Refactoring run_server and event handling - main 2 areas of concern
+ - Allow banning and test
+ - Refactor banning to use specific server events
  - Testing? (Need to mock the RCon server - easier said than done when dealing with UDP. Need to write an interface and overload it for testing I think.)
  - Clean up UI
- - Ability to ban by IP and GUID at the same time
+ - Ability to ban by IP and GUID at the same time - TODO: Refactor the form menu to have a drop-down for the type of ban
  - Show country flags next to players by looking up their IP
  - Store all previous Names and IP's for players, tracking them by their GUID
     - Ability to ban by previous IPs
  - Search for players by Name, IP, GUID
- - Better Stability of RCon Connection
  - Custom scripts to run in the web interface ?
  - Custom commands / aliases
  - Better theming / custom theming
  - Better logging
  - Docker support
- - Better Windows Support (Using winreg to obfuscate the DB encryption key)
  - Notifications for certain events
 
 ## Screenshots

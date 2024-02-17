@@ -7,6 +7,8 @@ import Settings from "../Models/Settings";
 import SettingsManager from "./SettingsManager";
 import VariableTimer from "../VariableTimer";
 import Console from "./Console";
+import { Tooltip } from "bootstrap";
+import Player from "../Models/Player";
 
 // https://www.battleye.com/support/documentation/
 class Nart {
@@ -90,6 +92,38 @@ class Nart {
 
         this.socket.onmessage = (event: MessageEvent) => {
             let data = JSON.parse(event.data);
+
+            if (data.type === ServerEvents.CHAT_ADMIN_JOIN) {
+                this.eventEmitter.emit(ServerEvents.CHAT_ADMIN_JOIN, data.data);
+                Console.getInstance().logEvent(ServerEvents.CHAT_ADMIN_JOIN, data.data.message);
+                return;
+            }
+
+            if (data.data !== undefined && data.data.message !== undefined) {
+                let id: number = -1;
+                let guid: string = '';
+
+                if (data.data.player !== undefined && data.data.player !== null && data.data.player.guid !== undefined) {
+                    guid = data.data.player.guid;
+                } else if (data.data.id !== undefined) {
+                    id = data.data.id;
+                }
+
+                let identify = '';
+
+                if (guid !== '') {
+                    identify = ` data-guid="${guid}"`;
+                } else if (id >= 0) {
+                    identify = ` data-id="${id}"`;
+                }
+
+                if (identify !== '') {
+                    let message = `<player ${identify}>${data.data.message}</player>`;
+                    Console.getInstance().logEvent(data.type, message);
+                    this.eventEmitter.emit(data.type, data.data);
+                    return;
+                }
+            }
 
             if (data.type === ServerEvents.CHAT_PLAYER_JOIN) {
                 this.eventEmitter.emit(ServerEvents.CHAT_PLAYER_JOIN, data.data);

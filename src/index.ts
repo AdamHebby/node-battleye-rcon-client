@@ -9,69 +9,13 @@ import "bootstrap";
 import Console from "./Frontend/Console";
 import ServerManager from "./Frontend/ServerManager";
 import SettingsManager from "./Frontend/SettingsManager";
-import Settings from "./Models/Settings";
 import { ConsoleColor } from "./Models/ConsoleColors";
 import ConsoleColorManager from "./Frontend/ConsoleColorManager";
 import * as bootstrap from "bootstrap";
 import PlayerRecord from "./Models/PlayerRecord";
+import { PlayerActionContextMenu, PlayerActionContextMenuCallback, PlayerActionContextMenuCallbackData } from "./Frontend/PlayerActionContextMenu";
 
 $(function () {
-    // @ts-ignore
-    $.fn.contextMenu = function (settings: {menuSelector: string, menuSelected: Function}) {
-        return this.each(function () {
-
-            // Open context menu
-            $(this).on("contextmenu", function (e: JQuery.ContextMenuEvent) {
-                // return native menu if pressing control
-                if (e.ctrlKey) return;
-
-                //open menu
-                var $menu = $(settings.menuSelector)
-                    .data("invokedOn", $(e.target))
-                    .show()
-                    .css({
-                        position: "absolute",
-                        left: getMenuPosition(e.clientX, 'width', 'scrollLeft'),
-                        top: getMenuPosition(e.clientY, 'height', 'scrollTop')
-                    })
-                    .off('click')
-                    .on('click', 'a', function (e: JQuery.ClickEvent) {
-                        e.preventDefault();
-                        $menu.hide();
-
-                        var $invokedOn = $menu.data("invokedOn");
-                        var $selectedMenu = $(e.target);
-
-                        settings.menuSelected.call(this, $invokedOn, $selectedMenu);
-                    });
-
-                return false;
-            });
-
-            //make sure menu closes on any click
-            $('body').on('click', function () {
-                $(settings.menuSelector).hide();
-            });
-        });
-
-        function getMenuPosition(mouse: number, direction: string, scrollDir: string) {
-            // @ts-ignore
-            var win = $(window)[direction](),
-                // @ts-ignore
-                scroll = $(window)[scrollDir](),
-                // @ts-ignore
-                menu = $(settings.menuSelector)[direction](),
-                position = mouse + scroll;
-
-            // opening menu would pass the side of the page
-            if (mouse + menu > win && menu < mouse)
-                position -= menu;
-
-            return position;
-        }
-
-    };
-
     const nart = Nart.getInstance();
 
     const serverManager = new ServerManager(
@@ -84,6 +28,60 @@ $(function () {
     const settingsManager = new SettingsManager($('#settings-config-form'));
     const consoleColorsManager = new ConsoleColorManager($('#settings-chat-colors-form'));
     Console.getInstance();
+
+    PlayerActionContextMenu.buildMenu();
+
+    const playerContextMenuActions: PlayerActionContextMenuCallback = function (action: string, data: PlayerActionContextMenuCallbackData) {
+        if (action === 'message' && data.formData.message !== undefined && data.gameId !== null) {
+            nart.messageUser(data.gameId, data.formData.message);
+            return;
+        }
+
+        if (action === 'set_comment' && data.dbId > 0) {
+            nart.sendCommand(ServerEvents.SET_COMMENT, {id: data.dbId, comment: data.formData.comment});
+            return;
+        }
+
+        if (action === 'set_nickname') {
+            nart.sendCommand(ServerEvents.SET_NICKNAME, {id: data.dbId, nickname: data.formData.nickname});
+            return;
+        }
+
+        if (action === 'kick' && data.formData.reason !== undefined && data.gameId !== null) {
+            nart.kickUser(data.gameId, data.formData.reason);
+            return;
+        }
+
+        if (action === 'ban_both' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
+            nart.sendCommand(ServerEvents.USER_BAN, {
+                id: data.gameId,
+                source: 'both',
+                reason: data.formData.reason,
+                duration: data.formData.duration
+            });
+            return;
+        }
+
+        if (action === 'ban_ip' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
+            nart.sendCommand(ServerEvents.USER_BAN, {
+                id: data.gameId,
+                source: 'ip',
+                reason: data.formData.reason,
+                duration: data.formData.duration
+            });
+            return;
+        }
+
+        if (action === 'ban_guid' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
+            nart.sendCommand(ServerEvents.USER_BAN, {
+                id: data.gameId,
+                source: 'ip',
+                reason: data.formData.reason,
+                duration: data.formData.duration
+            });
+            return;
+        }
+    }
 
     nart.eventEmitter.on(ServerEvents.PLAYERS, function (players: {players: Player[], playerRecords: PlayerRecord[]}) {
         $('#players-db').empty();
@@ -112,10 +110,10 @@ $(function () {
 
         allPlayers.forEach(function (record: PlayerRecord) {
             let connected = currentGuids.includes(record.guid) ? 'true' : 'false';
-            let gameId = currentPlayers.find((p: Player) => p.guid === record.guid)?.id;
-            let status = currentPlayers.find((p: Player) => p.guid === record.guid)?.status;
+            let gameId = currentPlayers.find((p: Player) => p.guid === record.guid)?.id ?? '';
+            let status = currentPlayers.find((p: Player) => p.guid === record.guid)?.status ?? '';
 
-            if (status !== undefined && status !== null) {
+            if (status !== '' && status !== '') {
                 status = status === 'Alive' ? 'alive' : 'lobby';
             }
 
@@ -134,25 +132,73 @@ $(function () {
         });
 
         $('#server-info-players').text(currentPlayers.length);
-    });
 
-    $(`
-        <div id="players-db-context-menu" class="dropdown-menu">
-            <a class="dropdown-item" href="#" data-action="message">Message</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#" data-action="set_comment">Set Comment</a>
-            <a class="dropdown-item" href="#" data-action="set_nickname">Set Nickname</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#" data-action="copy_all">Copy All</a>
-            <a class="dropdown-item" href="#" data-action="copy_ip">Copy IP</a>
-            <a class="dropdown-item" href="#" data-action="copy_guid">Copy GUID</a>
-            <a class="dropdown-item" href="#" data-action="copy_name">Copy Name</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item text-warning" href="#" data-action="kick">Kick</a>
-            <a class="dropdown-item text-danger" href="#" data-action="ban_ip">Ban (IP ADDRESS)</a>
-            <a class="dropdown-item text-danger" href="#" data-action="ban_guid">Ban (GUID)</a>
-        </div>
-    `).hide().appendTo('body');
+        $(document).find('player').each(function (el) {
+            let id = $(this).attr('data-id');
+            let guid = $(this).attr('data-guid');
+            let player: Player | undefined;
+            let dbRecord: PlayerRecord | undefined;
+
+            console.debug(id, guid);
+
+            if ((id === undefined && guid === undefined) || (id === '' && guid === '')) {
+                return;
+            }
+
+            if (guid === undefined || guid.trim() === '') {
+                if (id === undefined || id.trim() === '' || id === null) {
+                    return;
+                }
+
+                player = currentPlayers.find((p: Player) => p.id === parseInt(id as string)) as Player;
+
+                if (player === undefined || player.guid === undefined || !player) {
+                    return;
+                }
+
+                dbRecord = allPlayers.find((p: PlayerRecord) => p.guid === player?.guid) as PlayerRecord;
+
+                if (dbRecord === undefined || dbRecord.guid === undefined) {
+                    return;
+                }
+
+                guid = player.guid;
+            }
+
+            if (player === undefined && guid !== undefined) {
+                player = currentPlayers.find((p: Player) => p.guid === guid) as Player;
+                dbRecord = allPlayers.find((p: PlayerRecord) => p.guid === guid) as PlayerRecord;
+            }
+
+            if (dbRecord === undefined || dbRecord.guid === undefined) {
+                return;
+            }
+
+            $(this)
+                .attr('data-bs-toggle', 'popover')
+                .attr('data-bs-placement', 'top')
+                .attr('data-bs-trigger', 'hover focus')
+                .data('db-id', dbRecord.id)
+                .data('game-id', player?.id ?? 'Not In Game')
+                .data('guid', dbRecord.guid)
+                .data('ip', player?.ip ?? 'Not In Game')
+                .data('name', dbRecord.name);
+
+            bootstrap.Popover.getOrCreateInstance($(this).get(0) as HTMLElement, {
+                content: `In-Game ID: ${player?.id ?? 'Not In Game'}
+                    <br />IP: ${player?.ip ?? 'Last: ' + dbRecord.lastIp}
+                    <br />GUID: ${dbRecord.guid}
+                    <br />Name: ${dbRecord.name}
+                    <br />Nickname: ${dbRecord.nickname}
+                    <br />Status: ${player?.status ?? 'Not In Game'}`,
+                html: true,
+                title: dbRecord.name,
+            });
+
+            PlayerActionContextMenu.addMenu($(this), playerContextMenuActions);
+        });
+
+    });
 
     nart.eventEmitter.on(ServerEvents.BANS, function (bans: Ban[]) {
         $('#server-bans').empty();
@@ -331,174 +377,12 @@ $(function () {
             consoleColorsManager.update(colors);
         });
 
-        function bootstrapFormModal(title: string, message: string, form: JQuery<HTMLElement>, cb: Function) {
-            let modal        = $('#modal-input-form');
-            let modalTitle   = modal.find('.modal-title');
-            let modalText    = modal.find('.modal-text');
-            let modalConfirm = modal.find('.modal-confirm');
-            let formWrapper  = modal.find('.modal-form');
-
-            modalTitle.text(title);
-            modalText.text(message);
-            formWrapper.empty().append(form);
-
-            let m = bootstrap.Modal.getOrCreateInstance('#modal-input-form');
-
-            modalConfirm.one('click', function () {
-                let data: any = {};
-
-                form.serializeArray().map((i: any) => {
-                    data[i.name] = i.value;
-                });
-
-                cb(data);
-            });
-
-            m.show();
-        }
-
-        function bootstrapFormNumberGroup (name: string, label: string, min: number, max: number, value: number = 0) {
-            return $(`
-                <div class="form-group mb-2 row g-0">
-                    <label for="${name}" class="col-4 col-form-label form-label">${label}</label>
-                    <input type="number" class="col form-control" name="${name}" value="${value}" min="${min}" max="${max}">
-                </div>
-            `);
-        }
-
-        function bootstrapFormTextGroup (name: string, label: string, value: string = '') {
-            return $(`
-                <div class="form-group mb-2 row g-0">
-                    <label for="${name}" class="col-4 col-form-label form-label">${label}</label>
-                    <input type="text" class="col form-control" name="${name}" value="${value}">
-                </div>
-            `);
-        }
-
         $('#modal-input-form').on('keyup', 'input, textarea', function (e) {
             if (e.key === 'Enter' && e.ctrlKey === true && e.shiftKey === false && e.altKey === false && e.metaKey === false) {
                 $('#modal-input-form').find('.modal-confirm').trigger('click');
             }
         });
 
-        // @ts-ignore
-        $("#players-db, #server-players").contextMenu({
-            menuSelector: "#players-db-context-menu",
-            menuSelected: function (invokedOn: JQuery<Element>, selectedMenu: JQuery<Element>) {
-                let action = selectedMenu.data('action');
-                let dbId   = invokedOn.parent('.survivor-row').data('db-id');
-                let gameId = invokedOn.parent('.survivor-row').data('game-id');
-                let guid   = invokedOn.parent('.survivor-row').data('guid');
-                let ip     = invokedOn.parent('.survivor-row').data('ip');
-                let name   = invokedOn.parent('.survivor-row').data('name') || null;
-
-                if (action === 'message' && dbId !== '') {
-                    let form = $('<form>').append($('<textarea class="w-100" rows="5">').attr('name', 'message').val(''));
-
-                    bootstrapFormModal(`Send Message to ${name}`, 'Input Message:', form, function (data: any) {
-                        if (data.message === undefined) {
-                            return;
-                        }
-
-                        nart.messageUser(gameId, data.message);
-                    });
-                    return;
-                }
-
-                if (action === 'set_comment') {
-                    let form = $('<form>').append($('<textarea class="w-100" rows="5">').attr('name', 'comment').val(''));
-
-                    bootstrapFormModal('Set Comment', 'Enter a comment:', form, function (data: any) {
-                        if (data.comment === undefined) {
-                            return;
-                        }
-
-                        nart.sendCommand(ServerEvents.SET_COMMENT, {id: dbId, comment: data.comment});
-                    });
-                    return;
-                }
-
-                if (action === 'set_nickname') {
-                    let form = $('<form>').append(bootstrapFormTextGroup('nickname', 'Nickname', ''));
-
-                    bootstrapFormModal('Set Nickname', 'Enter new Nickname:', form, function (data: any) {
-                        if (data.nickname === undefined) {
-                            return;
-                        }
-
-                        nart.sendCommand(ServerEvents.SET_NICKNAME, {id: dbId, nickname: data.nickname});
-                    });
-                    return;
-                }
-
-                if (action === 'copy_all') {
-                    navigator.clipboard.writeText(`GUID: ${guid}\nIP: ${ip}\nGAME ID: ${gameId}`);
-                    return;
-                }
-
-                if (action === 'copy_ip') {
-                    navigator.clipboard.writeText(ip);
-                    return;
-                }
-
-                if (action === 'copy_guid') {
-                    navigator.clipboard.writeText(guid);
-                    return;
-                }
-
-                if (action === 'copy_name') {
-                    navigator.clipboard.writeText(name);
-                    return;
-                }
-
-                if (action === 'kick') {
-                    let form = $('<form>').append(bootstrapFormTextGroup('reason', 'Reason:', ''));
-
-                    bootstrapFormModal(`Kick ${name}`, `Are you sure you want to kick ${name} (${guid}) at ${ip}?`, form, function (data: any) {
-                        if (data.reason === undefined) {
-                            return;
-                        }
-
-                        nart.kickUser(gameId, data.reason);
-                    });
-                    return;
-                }
-
-                if (action === 'ban_ip') {
-                    let form = $('<form>')
-                        .append(bootstrapFormTextGroup('reason', 'Reason:', 'Banned by Admin'))
-                        .append(bootstrapFormNumberGroup('duration', 'Duration:', 0, 525600, 0));
-
-                    bootstrapFormModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their IP address?`, form, function (data: any) {
-                        console.debug(data);
-
-                        if (data.reason === undefined || data.duration === undefined) {
-                            return;
-                        }
-
-                        // nart.sendCommand(Events.USER_BAN, {id: gameId, reason: data.reason, duration: data.duration});
-                    });
-                    return;
-                }
-
-                if (action === 'ban_guid') {
-                    let form = $('<form>')
-                        .append(bootstrapFormTextGroup('reason', 'Reason:', 'Banned by Admin'))
-                        .append(bootstrapFormNumberGroup('duration', 'Duration:', 0, 525600, 0));
-
-                    bootstrapFormModal(`Ban ${guid}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID?`, form, function (data: any) {
-                        console.debug(data);
-
-                        if (data.reason === undefined || data.duration === undefined) {
-                            return;
-                        }
-
-                        // nart.sendCommand(Events.USER_BAN, {id: gameId, reason: data.reason, duration: data.duration});
-                    });
-                    return;
-                }
-            }
-        });
-
+        PlayerActionContextMenu.addMenu($("#players-db, #server-players"), playerContextMenuActions);
     });
 });

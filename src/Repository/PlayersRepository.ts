@@ -87,8 +87,44 @@ class PlayersRepository extends AbstractRepository
 
     public findByIp(ip: string): PlayerRecord|null {
         let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE ip = ?');
+        let stmt = db.prepare('SELECT * FROM players WHERE lastIp = ?');
         let player = stmt.get(ip);
+
+        if (player === undefined || player === null) {
+            return null;
+        }
+
+        return PlayerRecord.fromJson(player);
+    }
+
+    public findByIpWithoutPort(ip: string): PlayerRecord|null {
+        let db = this.getConnection();
+        let stmt = db.prepare('SELECT * FROM players WHERE lastIp LIKE ?');
+        let player = stmt.get(ip.split(':')[0] + '%');
+
+        if (player === undefined || player === null) {
+            return null;
+        }
+
+        return PlayerRecord.fromJson(player);
+    }
+
+    public findByName(name: string): PlayerRecord|null {
+        let db = this.getConnection();
+        let stmt = db.prepare('SELECT * FROM players WHERE name = ?');
+        let player = stmt.get(name.trim());
+
+        if (player === undefined || player === null) {
+            return null;
+        }
+
+        return PlayerRecord.fromJson(player);
+    }
+
+    public findRecentByName(name: string): PlayerRecord|null {
+        let db = this.getConnection();
+        let stmt = db.prepare('SELECT * FROM players WHERE name = ? ORDER BY lastSeenDate DESC LIMIT 1');
+        let player = stmt.get(name.trim());
 
         if (player === undefined || player === null) {
             return null;
