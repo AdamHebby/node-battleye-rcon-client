@@ -7,7 +7,8 @@
   "scripts": {
     "build:server": "tsc --esModuleInterop --outDir build src/run_server.ts",
     "build:client": "npx webpack",
-    "build": "npm run build:server && npm run build:client",
+    "build:sqlite": "tsc --esModuleInterop --outDir build src/sqlite3.ts",
+    "build": "npm run build:server && npm run build:sqlite && npm run build:client",
     "start": "node build/run_server.js"
   },
   "author": "",
