@@ -14,6 +14,8 @@ import ConsoleColorManager from "./Frontend/ConsoleColorManager";
 import * as bootstrap from "bootstrap";
 import PlayerRecord from "./Models/PlayerRecord";
 import { PlayerActionContextMenu, PlayerActionContextMenuCallback, PlayerActionContextMenuCallbackData } from "./Frontend/PlayerActionContextMenu";
+import IpLookup from "./Frontend/IpLookup";
+import PlayerDetailsElement from "./Frontend/PlayerDetailsElement";
 
 $(function () {
     const nart = Nart.getInstance();
@@ -99,7 +101,7 @@ $(function () {
             $('#server-players').append(`
                 <tr class="survivor-row" data-name="${player.name}" data-status="${status}" data-guid="${player.guid}" data-ip="${player.ip}" data-game-id="${player.id}" data-db-id="${player.dbId}">
                     <td>${player.id}</td>
-                    <td>${player.ip}</td>
+                    <td><span class="ip-address">${player.ip}</span></td>
                     <td>${player.ping}</td>
                     <td>${player.guid}</td>
                     <td>${player.name}</td>
@@ -121,7 +123,7 @@ $(function () {
                 <tr class="survivor-row" data-name="${record.name}" data-status="${status}" data-connected="${connected}" data-guid="${record.guid}" data-ip="${record.lastIp}" data-db-id="${record.id}" data-game-id="${gameId}">
                     <td>${record.id}</td>
                     <td>${record.guid}</td>
-                    <td>${record.lastIp}</td>
+                    <td><span class="ip-address">${record.lastIp}</span></td>
                     <td>${record.lastSeen}</td>
                     <td>${record.lastSeenDate}</td>
                     <td>${record.name}</td>
@@ -131,6 +133,8 @@ $(function () {
             `);
         });
 
+        IpLookup.element($('#players-db, #server-players'));
+
         $('#server-info-players').text(currentPlayers.length);
 
         $(document).find('player').each(function (el) {
@@ -138,8 +142,6 @@ $(function () {
             let guid = $(this).attr('data-guid');
             let player: Player | undefined;
             let dbRecord: PlayerRecord | undefined;
-
-            console.debug(id, guid);
 
             if ((id === undefined && guid === undefined) || (id === '' && guid === '')) {
                 return;
@@ -174,30 +176,21 @@ $(function () {
                 return;
             }
 
-            $(this)
-                .attr('data-bs-toggle', 'popover')
-                .attr('data-bs-placement', 'top')
-                .attr('data-bs-trigger', 'hover focus')
-                .data('db-id', dbRecord.id)
-                .data('game-id', player?.id ?? 'Not In Game')
-                .data('guid', dbRecord.guid)
-                .data('ip', player?.ip ?? 'Not In Game')
-                .data('name', dbRecord.name);
+            let playerEl = PlayerDetailsElement.from($(this));
+            playerEl.update(player, dbRecord);
 
-            bootstrap.Popover.getOrCreateInstance($(this).get(0) as HTMLElement, {
-                content: `In-Game ID: ${player?.id ?? 'Not In Game'}
-                    <br />IP: ${player?.ip ?? 'Last: ' + dbRecord.lastIp}
-                    <br />GUID: ${dbRecord.guid}
-                    <br />Name: ${dbRecord.name}
-                    <br />Nickname: ${dbRecord.nickname}
-                    <br />Status: ${player?.status ?? 'Not In Game'}`,
-                html: true,
-                title: dbRecord.name,
-            });
+            let element = playerEl.getElement();
+            let popoverContent = playerEl.getBootstrapPopoverContent();
 
-            PlayerActionContextMenu.addMenu($(this), playerContextMenuActions);
+            if (playerEl.bsPopover === null && element !== undefined && popoverContent !== null) {
+                playerEl.bsPopover = bootstrap.Popover.getOrCreateInstance(
+                    element,
+                    popoverContent
+                );
+
+                playerEl.addActionMenu(playerContextMenuActions);
+            }
         });
-
     });
 
     nart.eventEmitter.on(ServerEvents.BANS, function (bans: Ban[]) {
