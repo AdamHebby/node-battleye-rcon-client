@@ -253,6 +253,30 @@ class BattleEyeSocketRelay {
 const wss = new websocket.Server({ port: 12639 });
 
 const requestListener = function (req: Request, res: ServerResponse) {
+    if (req.url.startsWith('/resources')) {
+        if (fs.existsSync(__dirname + '/..' + req.url) === false) {
+            res.writeHead(404);
+            res.end();
+            return;
+        }
+
+        let header: string = 'image/png';
+
+        if (req.url.endsWith('.css')) header = 'text/css';
+        if (req.url.endsWith('.js')) header = 'text/javascript';
+        if (req.url.endsWith('.json')) header = 'application/json';
+        if (req.url.endsWith('.html')) header = 'text/html';
+        if (req.url.endsWith('.jpg')) header = 'image/jpg';
+        if (req.url.endsWith('.png')) header = 'image/png';
+
+        res.setHeader("Content-Type", header);
+        res.writeHead(200);
+        res.end(
+            fs.readFileSync(__dirname + '/..' + req.url)
+        );
+        return;
+    }
+
     res.setHeader("Content-Type", "text/html");
     res.writeHead(200);
     res.end(
