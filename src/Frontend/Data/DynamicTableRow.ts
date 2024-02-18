@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import PlayerData from './PlayerData';
+import { Popover } from 'bootstrap';
 
 class DynamicTableRow
 {
@@ -11,6 +12,7 @@ class DynamicTableRow
         cell: PlayerData,
     ): DynamicTableRow {
         this.rowCells.push(cell);
+        this.rowData[cell.key] = cell;
         return this;
     }
 
@@ -78,6 +80,11 @@ class DynamicTableRow
                 td.attr(`data-col`, cell.key);
                 this.jqRow.append(td);
             }
+
+            this.jqRow.find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
+                let popover = Popover.getInstance(this);
+                popover?.hide();
+            });
 
             if (!isNew) {
                 $(onTable).find(`[data-${definedBy}]`).replaceWith(this.jqRow);

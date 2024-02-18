@@ -3,7 +3,9 @@ import $ from 'jquery';
 
 class GUID extends PlayerData
 {
-    public key: string = 'player-guid';
+    public static key: string = 'player-guid';
+    public key: string = GUID.key;
+
     public constructor(data: string)
     {
         super();

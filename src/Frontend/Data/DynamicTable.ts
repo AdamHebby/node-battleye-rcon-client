@@ -1,3 +1,4 @@
+import { Popover } from "bootstrap";
 import { DynamicTableRow } from "./DynamicTableRow";
 import $ from 'jquery';
 
@@ -25,6 +26,13 @@ class DynamicTable
             let value = $(element).attr(`data-${definedBy}`);
 
             if (value !== undefined && !definedValues.includes(value)) {
+                $(element).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
+                    let popover = Popover.getInstance(this);
+                    popover?.hide();
+                    popover?.disable();
+                    popover?.dispose();
+                });
+
                 $(element).remove();
             }
         });

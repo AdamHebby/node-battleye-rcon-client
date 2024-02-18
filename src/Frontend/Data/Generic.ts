@@ -3,7 +3,9 @@ import $ from 'jquery';
 
 class Generic extends PlayerData
 {
-    public key: string = 'player-generic';
+    public static key: string = 'player-generic';
+    public key: string = Generic.key;
+
     public constructor(data: string | number | null, key: string)
     {
         super();

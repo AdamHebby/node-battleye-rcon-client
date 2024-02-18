@@ -5,7 +5,9 @@ import { Popover } from 'bootstrap';
 
 class IpAddress extends PlayerData
 {
-    public key: string = 'player-ip-address';
+    public static key: string = 'player-ip-address';
+    public key: string = IpAddress.key;
+
     public constructor(data: string, public previous: string[] = [])
     {
         super();

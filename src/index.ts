@@ -28,6 +28,7 @@ import Nickname from "./Frontend/Data/Nickname";
 import Comment from "./Frontend/Data/Comment";
 import BanMinutesLeft from "./Frontend/Data/BanMinutesLeft";
 import BanReason from "./Frontend/Data/BanReason";
+import { BanRemoveContextMenu, BanRemoveContextMenuCallback, BanRemoveContextMenuCallbackData } from "./Frontend/BanRemoveContextMenu";
 
 $(function () {
     const nart = Nart.getInstance();
@@ -44,6 +45,7 @@ $(function () {
     Console.getInstance();
 
     PlayerActionContextMenu.buildMenu();
+    BanRemoveContextMenu.buildMenu();
 
     const playerContextMenuActions: PlayerActionContextMenuCallback = function (action: string, data: PlayerActionContextMenuCallbackData) {
         if (action === 'message' && data.formData.message !== undefined && data.gameId !== null) {
@@ -93,6 +95,13 @@ $(function () {
                 reason: data.formData.reason,
                 duration: data.formData.duration
             });
+            return;
+        }
+    }
+
+    const playerUnbanContextActions: BanRemoveContextMenuCallback = function (action: string, data: BanRemoveContextMenuCallbackData) {
+        if (action === 'ban_remove' && data.id !== null) {
+            nart.unbanUser(data.id);
             return;
         }
     }
@@ -210,14 +219,16 @@ $(function () {
         bans.forEach(function (ban: Ban) {
             serverBansTable.addRow(
                 (new DynamicTableRow())
-                    .addCell(new IpAddress(ban.ip ?? ''))
-                    .addCell(new GUID(ban.guid ?? ''))
+                    .addCell(new Generic(ban.id, 'id'))
+                    .addCell(ban.guid !== null ? new GUID(ban.guid) : new IpAddress(ban.ip ?? ''))
                     .addCell(new BanMinutesLeft(ban.minutesLeft))
                     .addCell(new BanReason(ban.reason))
             );
         });
 
-        serverBansTable.build('guid');
+        serverBansTable.build('id');
+
+        BanRemoveContextMenu.addMenu($('#server-bans'), playerUnbanContextActions);
     });
 
     $('#settings-colors-copy').on('click', function () {

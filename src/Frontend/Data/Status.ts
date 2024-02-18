@@ -3,7 +3,9 @@ import $ from 'jquery';
 
 class Status extends PlayerData
 {
-    public key: string = 'player-status';
+    public static key: string = 'player-status';
+    public key: string = Status.key;
+
     public constructor(data: string|null)
     {
         super();

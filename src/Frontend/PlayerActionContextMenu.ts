@@ -1,6 +1,9 @@
 import BootstrapUtils from "./BootstrapUtils";
 import ContextMenu from "./ContextMenu";
 import $ from "jquery";
+import Name from "./Data/Name";
+import IpAddress from "./Data/IpAddress";
+import GUID from "./Data/GUID";
 
 interface PlayerActionContextMenuCallbackData {
     dbId: number,
@@ -47,13 +50,18 @@ class PlayerActionContextMenu {
         ContextMenu.menu(record, {
             menuSelector: '#players-db-context-menu',
             beforeShow: function (e: JQuery.ContextMenuEvent) {
-                let disableOnlineButtons = $(e.target).closest('[data-guid]').data('game-id') === '';
+                let disableOnlineButtons = $(e.target).closest(`[data-${GUID.key}]`).data('game-id') === '';
                 $('#players-db-context-menu [data-action=message]').toggleClass('disabled', disableOnlineButtons);
                 $('#players-db-context-menu [data-action=kick]').toggleClass('text-warning', !disableOnlineButtons);
                 $('#players-db-context-menu [data-action=kick]').toggleClass('disabled', disableOnlineButtons);
             },
             menuSelected: function (invokedOn: JQuery<Element>, selectedMenu: JQuery<Element>) {
-                invokedOn = invokedOn.closest('[data-guid]');
+                invokedOn = invokedOn.closest(`[data-${GUID.key}]`);
+
+                if (invokedOn.length === 0) {
+                    return;
+                }
+
                 PlayerActionContextMenu.trigger(invokedOn, selectedMenu, callback);
             }
         });
@@ -63,9 +71,9 @@ class PlayerActionContextMenu {
         let action = selectedMenu.data('action');
         let dbId   = record.data('db-id');
         let gameId = record.data('game-id');
-        let guid   = record.data('guid');
-        let ip     = record.data('ip');
-        let name   = record.data('name') || null;
+        let guid   = record.data(GUID.key);
+        let ip     = record.data(IpAddress.key);
+        let name   = record.data(Name.key) || null;
 
         if (gameId === '') {
             gameId = null;

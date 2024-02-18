@@ -3,7 +3,9 @@ import $ from 'jquery';
 
 class Comment extends PlayerData
 {
-    public key: string = 'player-comment';
+    public static key: string = 'player-comment';
+    public key: string = Comment.key;
+
     public constructor(data: string)
     {
         super();

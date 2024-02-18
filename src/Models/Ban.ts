@@ -1,4 +1,5 @@
 class Ban {
+    public id: number;
     public ip: string|null = null;
     public guid: string|null = null;
     public minutesLeft: number;
@@ -6,7 +7,8 @@ class Ban {
 
     private expiresAt: Date;
 
-    constructor(ip: string|null, guid: string|null, minutesLeft: number, reason: string) {
+    constructor(id: number, ip: string|null, guid: string|null, minutesLeft: number, reason: string) {
+        this.id = id;
         this.ip = ip;
         this.guid = guid;
         this.minutesLeft = minutesLeft;
@@ -17,11 +19,12 @@ class Ban {
     }
 
     public static fromJson(json: any): Ban {
-        return new Ban(json?.ip, json?.guid, json.minutesLeft, json.reason);
+        return new Ban(json.id, json?.ip, json?.guid, json.minutesLeft, json.reason);
     }
 
     public toJson(): any {
         return {
+            id: this.id,
             ip: this.ip,
             guid: this.guid,
             minutesLeft: this.minutesLeft,

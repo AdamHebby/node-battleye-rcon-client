@@ -3,7 +3,9 @@ import $ from 'jquery';
 
 class BanReason extends PlayerData
 {
-    public key: string = 'player-ban-reason';
+    public static key: string = 'player-ban-reason';
+    public key: string = BanReason.key;
+
     public constructor(data: string)
     {
         super();

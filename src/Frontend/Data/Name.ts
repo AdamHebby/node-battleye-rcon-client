@@ -4,7 +4,9 @@ import { Popover } from 'bootstrap';
 
 class Name extends PlayerData
 {
-    public key: string = 'player-name';
+    public static key: string = 'player-name';
+    public key: string = Name.key;
+
     public constructor(data: string, public previous: string[] = [])
     {
         super();

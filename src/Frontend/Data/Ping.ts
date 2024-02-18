@@ -3,7 +3,9 @@ import $ from 'jquery';
 
 class Ping extends PlayerData
 {
-    public key: string = 'player-ping';
+    public static key: string = 'player-ping';
+    public key: string = Ping.key;
+
     public constructor(data: number | null)
     {
         super();
