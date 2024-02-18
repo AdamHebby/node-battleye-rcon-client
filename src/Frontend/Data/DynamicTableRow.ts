@@ -7,6 +7,11 @@ class DynamicTableRow
     private jqRow: JQuery<HTMLElement>|null = null;
     private rowCells: PlayerData[] = [];
     private rowData: { [key: string]: PlayerData } = {};
+    private classList: string = '';
+
+    public constructor(classList: string = '') {
+        this.classList = classList;
+    }
 
     public addCell(
         cell: PlayerData,
@@ -32,35 +37,25 @@ class DynamicTableRow
         let valid = true;
         let row = this;
 
-        $(element).find(`[data-${definedBy}]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
-            for (let data in row.rowData) {
-                if ($(element).attr(`data-${data}`) !== (row.getData(data) ?? '')) {
-                    valid = false;
-                    return;
+        $(element)
+            .find(`[data-${definedBy}="${this.getData(definedBy)}"]`)
+            .each(function (this: HTMLElement, index: number, element: HTMLElement) {
+                for (let data in row.rowData) {
+                    if (($(element).attr(`data-${data}`) ?? '').toString() !== (row.getData(data) ?? '').toString()) {
+                        valid = false;
+                    }
                 }
-            }
-
-            for (let data of row.rowCells) {
-                // if (data.compareHtml && data.html !== $(element).find(`[data-${data.key}]`)) {
-                // }
-
-                if ($(element).attr(`data-${data.key}`) !== (data.data ?? '')) {
-                    valid = false;
-                    return;
-                }
-            }
-        });
+            });
 
         return valid;
     }
 
     public build(onTable: JQuery<HTMLElement>, definedBy: string): void
     {
-        let valid = this.compare(onTable, definedBy);
         let isNew = $(onTable).find(`[data-${definedBy}="${this.getData(definedBy)}"]`).length === 0;
 
-        if (!valid || isNew) {
-            this.jqRow = $('<tr></tr>');
+        if (isNew || !this.compare(onTable, definedBy)) {
+            this.jqRow = $('<tr></tr>').addClass(this.classList);
 
             for (let data in this.rowData) {
                 this.jqRow.attr(`data-${data}`, (this.rowData[data]?.data ?? '').toString());
@@ -81,9 +76,11 @@ class DynamicTableRow
                 this.jqRow.append(td);
             }
 
-            this.jqRow.find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
+            $(onTable).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
                 let popover = Popover.getInstance(this);
                 popover?.hide();
+                popover?.disable();
+                popover?.dispose();
             });
 
             if (!isNew) {

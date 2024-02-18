@@ -4,30 +4,36 @@ import AbstractRepository from "./AbstractRepository";
 class PlayersRepository extends AbstractRepository
 {
     public upsert(player: PlayerRecord): PlayerRecord {
-        let id = (player.id === null || player.id === undefined) ? null : player.id;
-
         let db = this.getConnection();
-        if (id === null) {
-            let prep = db.prepare('SELECT id FROM players WHERE guid = ?');
-            prep.bind(player.guid);
-            let newId = prep.pluck().get() as number|null;
+        let previous = this.findByGuid(player.guid);
 
-            if (newId !== undefined && newId !== null) {
-                player.id = newId;
-            }
+        if (previous !== undefined && previous !== null) {
+            player.id = previous.id;
+
+            this.updateTable('players', [
+                { key: 'lastIp', value: player.lastIp },
+                { key: 'name', value: player.name },
+                { key: 'nickname', value: player.nickname },
+                { key: 'comment', value: player.comment },
+                { key: 'lastSeen', value: player.lastSeen },
+                { key: 'lastSeenDate', value: player.lastSeenDate.toLocaleString() }
+            ], { key: 'id', value: player.id });
+
+            return player;
         }
 
-        let stmt = db.prepare(
-            'INSERT OR REPLACE INTO players (id, lastIp, guid, name, nickname, comment, lastSeen, lastSeenDate) \
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-        stmt.run(player.id, player.lastIp, player.guid, player.name, player.nickname, player.comment, player.lastSeen, player.lastSeenDate.toLocaleString());
+        let id = this.insertInto('players', [
+            { key: 'lastIp', value: player.lastIp },
+            { key: 'guid', value: player.guid },
+            { key: 'name', value: player.name },
+            { key: 'nickname', value: player.nickname },
+            { key: 'comment', value: player.comment },
+            { key: 'lastSeen', value: player.lastSeen },
+            { key: 'lastSeenDate', value: player.lastSeenDate.toLocaleString() }
+        ], true);
 
-        if (player.id === null) {
-            let row = db.prepare('SELECT last_insert_rowid() as id').pluck().get() as number;
-
-            if (row !== undefined && row !== null) {
-                player.id = row;
-            }
+        if (id !== undefined && id !== null) {
+            player.id = id;
         }
 
         return player;
@@ -42,11 +48,30 @@ class PlayersRepository extends AbstractRepository
     }
 
     public all(): PlayerRecord[] {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players');
-        let players: any[] = stmt.all();
+        let players = this.many('SELECT * FROM players', []);
 
-        return players.map((player) => PlayerRecord.fromJson(player));
+        return players.map((player: PlayerRecord) => {
+            player.previousNames = this.getPreviousNames(player.id);
+            player.previousIps   = this.getPreviousIps(player.id);
+
+            return PlayerRecord.fromJson(player)
+        });
+    }
+
+    public getPreviousNames(id: number): string[] {
+        let db = this.getConnection();
+        let stmt = db.prepare('SELECT name FROM player_previous_names WHERE player_id = ?');
+        let names: any[] = stmt.all(id);
+
+        return names.map((name) => name.name);
+    }
+
+    public getPreviousIps(id: number): string[] {
+        let db = this.getConnection();
+        let stmt = db.prepare('SELECT ip FROM player_previous_ips WHERE player_id = ?');
+        let ips: any[] = stmt.all(id);
+
+        return ips.map((ip) => ip.ip);
     }
 
     public updateComment(id: number, comment: string) {
@@ -62,73 +87,79 @@ class PlayersRepository extends AbstractRepository
     }
 
     public find(id: number): PlayerRecord|null {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE id = ?');
-        let player = stmt.get(id);
+        let player = this.one('SELECT * FROM players WHERE id = ?', [id])
 
         if (player === undefined || player === null) {
             return null;
         }
+
+        player.previousNames = this.getPreviousNames(player.id);
+        player.previousIps   = this.getPreviousIps(player.id);
 
         return PlayerRecord.fromJson(player);
     }
 
     public findByGuid(guid: string): PlayerRecord|null {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE guid = ?');
-        let player = stmt.get(guid);
+        let player = this.one('SELECT * FROM players WHERE guid = ?', [guid])
 
         if (player === undefined || player === null) {
             return null;
         }
+
+        player.previousNames = this.getPreviousNames(player.id);
+        player.previousIps   = this.getPreviousIps(player.id);
 
         return PlayerRecord.fromJson(player);
     }
 
     public findByIp(ip: string): PlayerRecord|null {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE lastIp = ?');
-        let player = stmt.get(ip);
+        let player = this.one('SELECT * FROM players WHERE lastIp = ?', [ip])
 
         if (player === undefined || player === null) {
             return null;
         }
+
+        player.previousNames = this.getPreviousNames(player.id);
+        player.previousIps   = this.getPreviousIps(player.id);
 
         return PlayerRecord.fromJson(player);
     }
 
     public findByIpWithoutPort(ip: string): PlayerRecord|null {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE lastIp LIKE ?');
-        let player = stmt.get(ip.split(':')[0] + '%');
+        let player = this.one('SELECT * FROM players WHERE lastIp LIKE ?', [ip.split(':')[0] + '%'])
 
         if (player === undefined || player === null) {
             return null;
         }
+
+        player.previousNames = this.getPreviousNames(player.id);
+        player.previousIps   = this.getPreviousIps(player.id);
 
         return PlayerRecord.fromJson(player);
     }
 
     public findByName(name: string): PlayerRecord|null {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE name = ?');
-        let player = stmt.get(name.trim());
+        let player = this.one('SELECT * FROM players WHERE name = ?', [name.trim()])
 
         if (player === undefined || player === null) {
             return null;
         }
+
+        player.previousNames = this.getPreviousNames(player.id);
+        player.previousIps   = this.getPreviousIps(player.id);
 
         return PlayerRecord.fromJson(player);
     }
 
     public findRecentByName(name: string): PlayerRecord|null {
-        let db = this.getConnection();
-        let stmt = db.prepare('SELECT * FROM players WHERE name = ? ORDER BY lastSeenDate DESC LIMIT 1');
-        let player = stmt.get(name.trim());
+        let player = this.one('SELECT * FROM players WHERE name = ? ORDER BY lastSeenDate DESC LIMIT 1', [name.trim()])
 
         if (player === undefined || player === null) {
             return null;
         }
+
+        player.previousNames = this.getPreviousNames(player.id);
+        player.previousIps   = this.getPreviousIps(player.id);
 
         return PlayerRecord.fromJson(player);
     }
@@ -143,6 +174,20 @@ class PlayersRepository extends AbstractRepository
         let db = this.getConnection();
         let stmt = db.prepare('DELETE FROM players');
         stmt.run();
+    }
+
+    private one(sql: string, params: any[]): null | PlayerRecord {
+        let db = this.getConnection();
+        let stmt = db.prepare(sql);
+
+        return stmt.get(params) as PlayerRecord | null;
+    }
+
+    private many(sql: string, params: any[]): PlayerRecord[] {
+        let db = this.getConnection();
+        let stmt = db.prepare(sql);
+
+        return stmt.all(params) as PlayerRecord[];
     }
 }
 

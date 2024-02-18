@@ -1,7 +1,7 @@
 import Player from "./Player";
 
 class PlayerRecord {
-    public id: number|null = null;
+    public id: number;
     public lastIp: string;
     public guid: string;
     public name: string;
@@ -9,6 +9,8 @@ class PlayerRecord {
     public comment: string;
     public lastSeen: string;
     public lastSeenDate: Date;
+    public previousIps: string[] = [];
+    public previousNames: string[] = [];
 
     constructor(data: any) {
         this.id = data.id;
@@ -19,6 +21,8 @@ class PlayerRecord {
         this.comment = data.comment;
         this.lastSeen = data.lastSeen;
         this.lastSeenDate = new Date(data.lastSeenDate);
+        this.previousIps = data.previousIps ?? [];
+        this.previousNames = data.previousNames ?? [];
     }
 
     public static fromJson(data: any): PlayerRecord {
@@ -48,6 +52,8 @@ class PlayerRecord {
             comment: this.comment,
             lastSeen: this.lastSeen,
             lastSeenDate: this.lastSeenDate.toLocaleString(),
+            previousIps: this.previousIps,
+            previousNames: this.previousNames
         };
     }
 }

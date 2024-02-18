@@ -23,6 +23,7 @@ This will never require anything to exist on the server, and will never require 
  - Encrypted local database to store player data and server login credentials
  - Customizable settings and terminal colors
  - Console log details - Shows player data in pop-ups against log messages
+ - Keep track of players' previous in-game names and IPs
 
 ## Upcoming Features / TODO
  - Clean up IP Address resolving
@@ -31,8 +32,7 @@ This will never require anything to exist on the server, and will never require 
  - Testing? (Need to mock the RCon server - easier said than done when dealing with UDP. Need to write an interface and overload it for testing I think.)
  - Clean up UI
  - Ability to ban by IP and GUID at the same time - TODO: Refactor the form menu to have a drop-down for the type of ban
- - Store all previous Names and IP's for players, tracking them by their GUID
-    - Ability to ban by previous IPs
+ - Ability to ban by previous IPs
  - Search for players by Name, IP, GUID
  - Custom scripts to run in the web interface ?
  - Custom commands / aliases

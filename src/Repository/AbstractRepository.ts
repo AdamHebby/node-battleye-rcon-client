@@ -5,6 +5,47 @@ import Registry from "winreg";
 
 abstract class AbstractRepository
 {
+    public insertInto(table: string, data: {key: string, value: any}[], insertId: boolean = false): number|null {
+        let db = this.getConnection();
+        let keys = data.map((d) => d.key).join(', ');
+        let values = data.map((d) => d.value);
+        let qs = data.map(() => '?').join(', ');
+
+        let stmt = db.prepare(`INSERT INTO ${table} (${keys}) VALUES (${qs})`);
+
+        stmt.run(values);
+
+        if (insertId) {
+            let row = db.prepare('SELECT last_insert_rowid() as id').pluck().get() as number;
+
+            if (row !== undefined && row !== null) {
+                return row;
+            }
+        }
+
+        return null;
+    }
+
+    public updateTable(table: string, data: {key: string, value: any}[], where: {key: string, value: any}): void {
+        let db = this.getConnection();
+        let set = data.map((d) => `${d.key} = ?`).join(', ');
+        let values = data.map((d) => d.value);
+        let whereStr = `${where.key} = ?`;
+
+        let stmt = db.prepare(`UPDATE ${table} SET ${set} WHERE ${whereStr}`);
+
+        stmt.run([...values, where.value]);
+    }
+
+    public deleteFrom(table: string, where: {key: string, value: any}): void {
+        let db = this.getConnection();
+        let whereStr = `${where.key} = ?`;
+
+        let stmt = db.prepare(`DELETE FROM ${table} WHERE ${whereStr}`);
+
+        stmt.run(where.value);
+    }
+
     public getConnection(): DB
     {
         let appData = process.env?.APPDATA ?? process.env.HOME;
@@ -71,6 +112,46 @@ abstract class AbstractRepository
                 lastSeen TEXT NULL DEFAULT NULL,
                 lastSeenDate TEXT NULL DEFAULT NULL
             );
+        `);
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS player_previous_names (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+                player_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
+            );
+        `);
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS player_previous_ips (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+                player_id INTEGER NOT NULL,
+                ip TEXT NOT NULL,
+                date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
+            );
+        `);
+
+        db.exec(`
+            CREATE TRIGGER IF NOT EXISTS player_previous_names_insert
+                AFTER UPDATE OF name ON players
+                FOR EACH ROW
+                    WHEN OLD.name != NEW.name
+            BEGIN
+                INSERT INTO player_previous_names (player_id, name) VALUES (OLD.id, OLD.name);
+            END;
+        `);
+
+        db.exec(`
+            CREATE TRIGGER IF NOT EXISTS player_previous_ips_insert
+                AFTER UPDATE OF lastIp ON players
+                FOR EACH ROW
+                    WHEN OLD.lastIp != NEW.lastIp
+            BEGIN
+                INSERT INTO player_previous_ips (player_id, ip) VALUES (OLD.id, OLD.lastIp);
+            END;
         `);
 
         db.exec(`CREATE INDEX IF NOT EXISTS idx_players_guid ON players (guid);`);

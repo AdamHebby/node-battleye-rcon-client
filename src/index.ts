@@ -29,6 +29,7 @@ import Comment from "./Frontend/Data/Comment";
 import BanMinutesLeft from "./Frontend/Data/BanMinutesLeft";
 import BanReason from "./Frontend/Data/BanReason";
 import { BanRemoveContextMenu, BanRemoveContextMenuCallback, BanRemoveContextMenuCallbackData } from "./Frontend/BanRemoveContextMenu";
+import GenericDate from "./Frontend/Data/GenericDate";
 
 $(function () {
     const nart = Nart.getInstance();
@@ -119,12 +120,12 @@ $(function () {
             currentGuids.push(player.guid);
 
             serverPlayersTable.addRow(
-                (new DynamicTableRow())
+                (new DynamicTableRow('survivor-row'))
                     .addCell(new Generic(player.id, 'game-id'))
-                    .addCell(new IpAddress(player.ip))
+                    .addCell(new IpAddress(player.ip, player.record?.previousIps))
                     .addCell(new Ping(player.ping))
                     .addCell(new GUID(player.guid))
-                    .addCell(new Name(player.name))
+                    .addCell(new Name(player.name, player.record?.previousNames))
                     .addCell(new Status(player.status))
                     .addData(new Generic(player.dbId, 'db-id'))
             );
@@ -136,13 +137,13 @@ $(function () {
             let status = currentPlayers.find((p: Player) => p.guid === record.guid)?.status ?? '';
 
             playersDbTable.addRow(
-                (new DynamicTableRow())
+                (new DynamicTableRow('survivor-row'))
                     .addCell(new Generic(record.id, 'db-id'))
                     .addCell(new GUID(record.guid))
-                    .addCell(new IpAddress(record.lastIp))
+                    .addCell(new IpAddress(record.lastIp, record.previousIps))
                     .addCell(new Generic(record.lastSeen, 'last-seen'))
-                    .addCell(new Generic(record.lastSeenDate.toLocaleString(), 'last-seen-date'))
-                    .addCell(new Name(record.name))
+                    .addCell(new GenericDate(record.lastSeenDate, 'last-seen-date'))
+                    .addCell(new Name(record.name, record.previousNames))
                     .addCell(new Nickname(record.nickname))
                     .addCell(new Comment(record.comment))
                     .addData(new Status(status))
@@ -218,7 +219,7 @@ $(function () {
         let serverBansTable = new DynamicTable($('#server-bans'));
         bans.forEach(function (ban: Ban) {
             serverBansTable.addRow(
-                (new DynamicTableRow())
+                (new DynamicTableRow('survivor-row ban-row'))
                     .addCell(new Generic(ban.id, 'id'))
                     .addCell(ban.guid !== null ? new GUID(ban.guid) : new IpAddress(ban.ip ?? ''))
                     .addCell(new BanMinutesLeft(ban.minutesLeft))

@@ -1,5 +1,4 @@
 import PlayerData from './PlayerData';
-import $ from 'jquery';
 
 class BanReason extends PlayerData
 {

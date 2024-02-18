@@ -14,19 +14,13 @@ class Name extends PlayerData
     }
 
     public jQuery(): JQuery<HTMLElement> {
-        let j = $(this.html(this.key));
+        let element = $(this.html(this.key));
 
         if (this.previous.length > 0) {
-            Popover.getOrCreateInstance(j[0], {
-                content: this.previous.join('<br>'),
-                title: 'Previous Names',
-                html: true,
-                placement: 'top',
-                trigger: 'hover',
-            });
+            this.popover(element, this.previous.join('<br>'), 'Previous Names');
         }
 
-        return j;
+        return element;
     }
 }
 

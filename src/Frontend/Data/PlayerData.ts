@@ -1,3 +1,4 @@
+import { Popover, Tooltip } from 'bootstrap';
 import $ from 'jquery';
 
 abstract class PlayerData {
@@ -18,6 +19,22 @@ abstract class PlayerData {
 
     public jQuery(): JQuery<HTMLElement> {
         return $(this.html(this.key));
+    }
+
+    protected popover(element: JQuery<HTMLElement>, content: string, title: string = '', placement: Tooltip.PopoverPlacement = 'top'): void
+    {
+        element.attr('data-bs-toggle', 'popover')
+            .attr('data-bs-placement', placement)
+            .attr('data-bs-trigger', 'hover focus');
+
+        Popover.getOrCreateInstance(element[0], {
+            title: title,
+            content: content,
+            html: true,
+            placement: placement,
+            animation: false,
+            trigger: 'hover focus',
+        });
     }
 }
 

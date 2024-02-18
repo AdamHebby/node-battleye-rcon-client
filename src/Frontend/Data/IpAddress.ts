@@ -1,7 +1,6 @@
 import IpLookup from '../IpLookup';
 import PlayerData from './PlayerData';
 import $ from 'jquery';
-import { Popover } from 'bootstrap';
 
 class IpAddress extends PlayerData
 {
@@ -18,13 +17,7 @@ class IpAddress extends PlayerData
         let element = $(this.html('player-ip-address'));
 
         if (this.previous.length > 0) {
-            Popover.getOrCreateInstance(element[0], {
-                content: this.previous.join('<br>'),
-                title: 'Previous Names',
-                html: true,
-                placement: 'top',
-                trigger: 'hover',
-            });
+            this.popover(element, this.previous.join('<br>'), 'Previous IPs');
         }
 
         IpLookup.element(element);
