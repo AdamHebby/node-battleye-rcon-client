@@ -1,4 +1,4 @@
-import DynamicTableRow from "./DynamicTableRow";
+import { DynamicTableRow } from "./DynamicTableRow";
 import $ from 'jquery';
 
 class DynamicTable

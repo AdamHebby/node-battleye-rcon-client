@@ -16,8 +16,18 @@ import PlayerRecord from "./Models/PlayerRecord";
 import { PlayerActionContextMenu, PlayerActionContextMenuCallback, PlayerActionContextMenuCallbackData } from "./Frontend/PlayerActionContextMenu";
 import IpLookup from "./Frontend/IpLookup";
 import PlayerDetailsElement from "./Frontend/PlayerDetailsElement";
-import DynamicTableRow from "./Frontend/Data/DynamicTableRow";
+import { DynamicTableRow } from "./Frontend/Data/DynamicTableRow";
 import DynamicTable from "./Frontend/Data/DynamicTable";
+import Generic from "./Frontend/Data/Generic";
+import IpAddress from "./Frontend/Data/IpAddress";
+import Ping from "./Frontend/Data/Ping";
+import GUID from "./Frontend/Data/GUID";
+import Name from "./Frontend/Data/Name";
+import Status from "./Frontend/Data/Status";
+import Nickname from "./Frontend/Data/Nickname";
+import Comment from "./Frontend/Data/Comment";
+import BanMinutesLeft from "./Frontend/Data/BanMinutesLeft";
+import BanReason from "./Frontend/Data/BanReason";
 
 $(function () {
     const nart = Nart.getInstance();
@@ -89,25 +99,25 @@ $(function () {
 
     nart.eventEmitter.on(ServerEvents.PLAYERS, function (players: {players: Player[], playerRecords: PlayerRecord[]}) {
         let currentPlayers = players.players;
-        let allPlayers = players.playerRecords;
-
-        let currentGuids: string[] = [];
+        let allPlayers     = players.playerRecords;
 
         let serverPlayersTable = new DynamicTable($('#server-players'));
-        let playersDbTable = new DynamicTable($('#players-db'));
+        let playersDbTable     = new DynamicTable($('#players-db'));
+
+        let currentGuids: string[] = [];
 
         currentPlayers.forEach(function (player: Player) {
             currentGuids.push(player.guid);
 
             serverPlayersTable.addRow(
                 (new DynamicTableRow())
-                    .addCell('game-id', player.id)
-                    .addCell('ip', player.ip, $(`<span class="ip-address">${player.ip}</span>`))
-                    .addCell('ping', player.ping)
-                    .addCell('guid', player.guid)
-                    .addCell('name', player.name)
-                    .addCell('status', player.status)
-                    .addData('db-id', player.dbId)
+                    .addCell(new Generic(player.id, 'game-id'))
+                    .addCell(new IpAddress(player.ip))
+                    .addCell(new Ping(player.ping))
+                    .addCell(new GUID(player.guid))
+                    .addCell(new Name(player.name))
+                    .addCell(new Status(player.status))
+                    .addData(new Generic(player.dbId, 'db-id'))
             );
         });
 
@@ -118,22 +128,22 @@ $(function () {
 
             playersDbTable.addRow(
                 (new DynamicTableRow())
-                    .addCell('id', record.id)
-                    .addCell('guid', record.guid)
-                    .addCell('ip', record.lastIp, $(`<span class="ip-address">${record.lastIp}</span>`))
-                    .addCell('last-seen', record.lastSeen)
-                    .addCell('last-seen-date', record.lastSeenDate.toLocaleString())
-                    .addCell('name', record.name)
-                    .addCell('nickname', record.nickname)
-                    .addCell('comment', record.comment)
-                    .addData('status', status)
-                    .addData('connected', connected)
-                    .addData('game-id', gameId)
+                    .addCell(new Generic(record.id, 'db-id'))
+                    .addCell(new GUID(record.guid))
+                    .addCell(new IpAddress(record.lastIp))
+                    .addCell(new Generic(record.lastSeen, 'last-seen'))
+                    .addCell(new Generic(record.lastSeenDate.toLocaleString(), 'last-seen-date'))
+                    .addCell(new Name(record.name))
+                    .addCell(new Nickname(record.nickname))
+                    .addCell(new Comment(record.comment))
+                    .addData(new Status(status))
+                    .addData(new Generic(connected, 'connected'))
+                    .addData(new Generic(gameId, 'game-id'))
             );
         });
 
-        serverPlayersTable.build('guid');
-        playersDbTable.build('guid');
+        serverPlayersTable.build('player-guid');
+        playersDbTable.build('player-guid');
 
         IpLookup.elements($('#players-db, #server-players'));
 
@@ -200,10 +210,10 @@ $(function () {
         bans.forEach(function (ban: Ban) {
             serverBansTable.addRow(
                 (new DynamicTableRow())
-                    .addCell('ip', ban.ip)
-                    .addCell('guid', ban.guid)
-                    .addCell('minutes-left', ban.minutesLeft)
-                    .addCell('reason', ban.reason)
+                    .addCell(new IpAddress(ban.ip ?? ''))
+                    .addCell(new GUID(ban.guid ?? ''))
+                    .addCell(new BanMinutesLeft(ban.minutesLeft))
+                    .addCell(new BanReason(ban.reason))
             );
         });
 

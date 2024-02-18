@@ -24,8 +24,6 @@ class PlayerConnectHandler extends BattleyeMessageHandler {
             m = message.content.match(/^Player #(\d+) (.*?) \((\d+\.\d+\.\d+\.\d+):\d+\) connected$/) || [];
             ip = m[3];
             player = this.playerRepo.findByIpWithoutPort(ip);
-
-            console.debug(player);
         }
 
         if (message.content.startsWith('Verified GUID')) {

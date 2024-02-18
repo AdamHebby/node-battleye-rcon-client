@@ -189,8 +189,6 @@ class PlayerActionContextMenu {
                 .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
 
             BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID and IP address?`, form, function (data: any) {
-                console.debug(data);
-
                 if (data.reason === undefined || data.duration === undefined) {
                     return;
                 }
@@ -218,8 +216,6 @@ class PlayerActionContextMenu {
                 .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
 
             BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their IP address?`, form, function (data: any) {
-                console.debug(data);
-
                 if (data.reason === undefined || data.duration === undefined) {
                     return;
                 }
@@ -246,8 +242,6 @@ class PlayerActionContextMenu {
                 .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
 
             BootstrapUtils.formModal(`Ban ${guid}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID?`, form, function (data: any) {
-                console.debug(data);
-
                 if (data.reason === undefined || data.duration === undefined) {
                     return;
                 }

@@ -1,31 +1,28 @@
 import $ from 'jquery';
+import PlayerData from './PlayerData';
 
 class DynamicTableRow
 {
     private jqRow: JQuery<HTMLElement>|null = null;
-    private rowCells: { key: string, value: string|number|null, html: JQuery<HTMLElement>|null, compareHtml: boolean }[] = [];
-    private rowData: { [key: string]: string|number|null } = {};
+    private rowCells: PlayerData[] = [];
+    private rowData: { [key: string]: PlayerData } = {};
 
     public addCell(
-        name: string,
-        value: string|number|null,
-        html: JQuery<HTMLElement>|null = null,
-        compareHtml: boolean = false
+        cell: PlayerData,
     ): DynamicTableRow {
-        this.rowCells.push({ key: name, value: value, html: html, compareHtml: compareHtml});
-        this.rowData[name] = value;
+        this.rowCells.push(cell);
         return this;
     }
 
-    public addData(key: string, value: string|number|null): DynamicTableRow
+    public addData(data: PlayerData): DynamicTableRow
     {
-        this.rowData[key] = value;
+        this.rowData[data.key] = data;
         return this;
     }
 
-    public getData(key: string): string|number|null
+    public getData(key: string): string | number | null
     {
-        return this.rowData[key];
+        return this.rowData[key]?.data ?? null;
     }
 
     private compare(element: JQuery<HTMLElement>, definedBy: string): boolean
@@ -35,7 +32,7 @@ class DynamicTableRow
 
         $(element).find(`[data-${definedBy}]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
             for (let data in row.rowData) {
-                if ($(element).attr(`data-${data}`) !== (row.rowData[data] ?? '').toString()) {
+                if ($(element).attr(`data-${data}`) !== (row.getData(data) ?? '')) {
                     valid = false;
                     return;
                 }
@@ -45,7 +42,7 @@ class DynamicTableRow
                 // if (data.compareHtml && data.html !== $(element).find(`[data-${data.key}]`)) {
                 // }
 
-                if ($(element).attr(`data-${data.key}`) !== (data.value ?? '').toString()) {
+                if ($(element).attr(`data-${data.key}`) !== (data.data ?? '')) {
                     valid = false;
                     return;
                 }
@@ -64,18 +61,18 @@ class DynamicTableRow
             this.jqRow = $('<tr></tr>');
 
             for (let data in this.rowData) {
-                this.jqRow.attr(`data-${data}`, (this.rowData[data] ?? '').toString());
+                this.jqRow.attr(`data-${data}`, (this.rowData[data]?.data ?? '').toString());
             }
 
             for (let cell of this.rowCells) {
-                this.jqRow.attr(`data-${cell.key}`, (cell.value ?? '').toString());
+                this.jqRow.attr(`data-${cell.key}`, (cell.data ?? '').toString());
 
                 let td = $('<td></td>');
 
-                if (cell.html !== null) {
-                    td.append(cell.html);
+                if (cell.html !== null && cell.html !== undefined) {
+                    td.append(cell.jQuery());
                 } else {
-                    td.text((cell.value ?? '').toString());
+                    td.text((cell.data ?? '').toString());
                 }
 
                 td.attr(`data-col`, cell.key);
@@ -91,4 +88,6 @@ class DynamicTableRow
     }
 }
 
-export default DynamicTableRow;
+export {
+    DynamicTableRow,
+};
