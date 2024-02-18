@@ -16,6 +16,8 @@ import PlayerRecord from "./Models/PlayerRecord";
 import { PlayerActionContextMenu, PlayerActionContextMenuCallback, PlayerActionContextMenuCallbackData } from "./Frontend/PlayerActionContextMenu";
 import IpLookup from "./Frontend/IpLookup";
 import PlayerDetailsElement from "./Frontend/PlayerDetailsElement";
+import DynamicTableRow from "./Frontend/Data/DynamicTableRow";
+import DynamicTable from "./Frontend/Data/DynamicTable";
 
 $(function () {
     const nart = Nart.getInstance();
@@ -86,28 +88,27 @@ $(function () {
     }
 
     nart.eventEmitter.on(ServerEvents.PLAYERS, function (players: {players: Player[], playerRecords: PlayerRecord[]}) {
-        $('#players-db').empty();
-        $('#server-players').empty();
-
         let currentPlayers = players.players;
         let allPlayers = players.playerRecords;
 
         let currentGuids: string[] = [];
 
+        let serverPlayersTable = new DynamicTable($('#server-players'));
+        let playersDbTable = new DynamicTable($('#players-db'));
+
         currentPlayers.forEach(function (player: Player) {
             currentGuids.push(player.guid);
-            let status = player.status === 'Alive' ? 'alive' : 'lobby';
 
-            $('#server-players').append(`
-                <tr class="survivor-row" data-name="${player.name}" data-status="${status}" data-guid="${player.guid}" data-ip="${player.ip}" data-game-id="${player.id}" data-db-id="${player.dbId}">
-                    <td>${player.id}</td>
-                    <td><span class="ip-address">${player.ip}</span></td>
-                    <td>${player.ping}</td>
-                    <td>${player.guid}</td>
-                    <td>${player.name}</td>
-                    <td>${player.status}</td>
-                </tr>
-            `);
+            serverPlayersTable.addRow(
+                (new DynamicTableRow())
+                    .addCell('game-id', player.id)
+                    .addCell('ip', player.ip, $(`<span class="ip-address">${player.ip}</span>`))
+                    .addCell('ping', player.ping)
+                    .addCell('guid', player.guid)
+                    .addCell('name', player.name)
+                    .addCell('status', player.status)
+                    .addData('db-id', player.dbId)
+            );
         });
 
         allPlayers.forEach(function (record: PlayerRecord) {
@@ -115,25 +116,26 @@ $(function () {
             let gameId = currentPlayers.find((p: Player) => p.guid === record.guid)?.id ?? '';
             let status = currentPlayers.find((p: Player) => p.guid === record.guid)?.status ?? '';
 
-            if (status !== '' && status !== '') {
-                status = status === 'Alive' ? 'alive' : 'lobby';
-            }
-
-            $('#players-db').append(`
-                <tr class="survivor-row" data-name="${record.name}" data-status="${status}" data-connected="${connected}" data-guid="${record.guid}" data-ip="${record.lastIp}" data-db-id="${record.id}" data-game-id="${gameId}">
-                    <td>${record.id}</td>
-                    <td>${record.guid}</td>
-                    <td><span class="ip-address">${record.lastIp}</span></td>
-                    <td>${record.lastSeen}</td>
-                    <td>${record.lastSeenDate}</td>
-                    <td>${record.name}</td>
-                    <td>${record.nickname ?? ''}</td>
-                    <td>${record.comment ?? ''}</td>
-                </tr>
-            `);
+            playersDbTable.addRow(
+                (new DynamicTableRow())
+                    .addCell('id', record.id)
+                    .addCell('guid', record.guid)
+                    .addCell('ip', record.lastIp, $(`<span class="ip-address">${record.lastIp}</span>`))
+                    .addCell('last-seen', record.lastSeen)
+                    .addCell('last-seen-date', record.lastSeenDate.toLocaleString())
+                    .addCell('name', record.name)
+                    .addCell('nickname', record.nickname)
+                    .addCell('comment', record.comment)
+                    .addData('status', status)
+                    .addData('connected', connected)
+                    .addData('game-id', gameId)
+            );
         });
 
-        IpLookup.element($('#players-db, #server-players'));
+        serverPlayersTable.build('guid');
+        playersDbTable.build('guid');
+
+        IpLookup.elements($('#players-db, #server-players'));
 
         $('#server-info-players').text(currentPlayers.length);
 
@@ -194,17 +196,18 @@ $(function () {
     });
 
     nart.eventEmitter.on(ServerEvents.BANS, function (bans: Ban[]) {
-        $('#server-bans').empty();
+        let serverBansTable = new DynamicTable($('#server-bans'));
         bans.forEach(function (ban: Ban) {
-            $('#server-bans').append(`
-                <tr>
-                    <td>${ban.ip}</td>
-                    <td>${ban.guid}</td>
-                    <td>${ban.minutesLeft}</td>
-                    <td>${ban.reason}</td>
-                </tr>
-            `);
+            serverBansTable.addRow(
+                (new DynamicTableRow())
+                    .addCell('ip', ban.ip)
+                    .addCell('guid', ban.guid)
+                    .addCell('minutes-left', ban.minutesLeft)
+                    .addCell('reason', ban.reason)
+            );
         });
+
+        serverBansTable.build('guid');
     });
 
     $('#settings-colors-copy').on('click', function () {

@@ -35,23 +35,37 @@ class IpLookup
         });
     }
 
-    public static async element(element: JQuery<HTMLElement>): Promise<void>
+    public static async elements(element: JQuery<HTMLElement>): Promise<void>
     {
         return new Promise(async (resolve, reject) => {
             let address = element.find('.ip-address');
 
             for (let i = 0; i < address.length; i++) {
-                let element = $(address[i]);
-                let ip = IpLookup.clean(element.text());
-
-                if (ip.length === 0) {
-                    continue;
-                }
-
-                let countryCode = await this.getCountryFlagFromIp(ip);
-
-                $(`<img src="${countryCode}" class="ip-flag" />&nbsp;`).prependTo($(element));
+                await this.element($(address[i]));
             }
+
+            resolve();
+        });
+    }
+
+    public static async element(element: JQuery<HTMLElement>): Promise<void>
+    {
+        return new Promise(async (resolve, reject) => {
+            if (element.find('.ip-flag').length > 0) {
+                resolve();
+                return;
+            }
+
+            let ip = IpLookup.clean(element.text());
+
+            if (ip.length === 0) {
+                reject();
+                return;
+            }
+
+            let countryCode = await this.getCountryFlagFromIp(ip);
+
+            $(`<img src="${countryCode}" class="ip-flag" />&nbsp;`).prependTo($(element));
 
             resolve();
         });
@@ -64,6 +78,7 @@ class IpLookup
 
             if (ip.length === 0) {
                 reject();
+                return;
             }
 
             let countryCode = await this.getCountryFlagFromIp(ip);
