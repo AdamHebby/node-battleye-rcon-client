@@ -1,8 +1,17 @@
+import { NartUser } from "../Models/NartUser";
 import PlayerRecord from "../Models/PlayerRecord";
 import AbstractRepository from "./AbstractRepository";
+import DatabaseManager from "./DatabaseManager";
 
 class PlayersRepository extends AbstractRepository
 {
+    public static repo(user: NartUser): PlayersRepository
+    {
+        return new PlayersRepository(
+            DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)
+        );
+    }
+
     public upsert(player: PlayerRecord): PlayerRecord {
         let db = this.getConnection();
         let previous = this.findByGuid(player.guid);

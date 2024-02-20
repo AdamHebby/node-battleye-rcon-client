@@ -1,8 +1,17 @@
 import AbstractRepository from "./AbstractRepository";
 import Server from '../Models/Server';
+import { NartUser } from "../Models/NartUser";
+import DatabaseManager from "./DatabaseManager";
 
 class ServerRepository extends AbstractRepository
 {
+    public static repo(user: NartUser): ServerRepository
+    {
+        return new ServerRepository(
+            DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)
+        );
+    }
+
     public upsert(server: Server): Server {
         let db = this.getConnection();
 
@@ -27,7 +36,7 @@ class ServerRepository extends AbstractRepository
         let data = db.prepare('SELECT * FROM servers').all();
 
         let servers: Server[] = [];
-        data.forEach(function (row) {
+        data.forEach(function (row: any) {
             servers.push(Server.fromJson(row));
         });
 

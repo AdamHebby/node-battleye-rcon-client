@@ -1,8 +1,17 @@
 import AbstractRepository from "./AbstractRepository";
 import Settings from '../Models/Settings';
+import { NartUser } from "../Models/NartUser";
+import DatabaseManager from "./DatabaseManager";
 
 class SettingsRepository extends AbstractRepository
 {
+    public static repo(user: NartUser): SettingsRepository
+    {
+        return new SettingsRepository(
+            DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)
+        );
+    }
+
     public upsert(settings: Settings): Settings {
         let db = this.getConnection();
         settings = Settings.fromJson(settings.settings);

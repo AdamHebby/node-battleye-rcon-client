@@ -1,8 +1,17 @@
 import AbstractRepository from "./AbstractRepository";
 import {ConsoleColor} from "../Models/ConsoleColors";
+import DatabaseManager from "./DatabaseManager";
+import { NartUser } from "../Models/NartUser";
 
 class ConsoleColorsRepository extends AbstractRepository
 {
+    public static repo(user: NartUser): ConsoleColorsRepository
+    {
+        return new ConsoleColorsRepository(
+            DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)
+        );
+    }
+
     public upsert(colors: ConsoleColor[]): ConsoleColor[] {
         let db = this.getConnection();
 

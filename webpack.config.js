@@ -7,8 +7,7 @@ module.exports = {
   mode: "development",
   devtool: "inline-source-map",
   entry: {
-    index: "./src/index.ts",
-    // server: "./src/server.ts"
+    index: "./src/index.ts"
   },
   output: {
     path: path.resolve(__dirname, './build'),
@@ -35,14 +34,26 @@ module.exports = {
     ]
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      template: 'invite.html',
+      filename: 'invite.html',
+      chunks: ['invite'],
+      inject: false
+    }),
+    new HtmlWebpackPlugin({
+      template: 'login.html',
+      filename: 'login.html',
+      chunks: ['login'],
+      inject: false
+    }),
     new HtmlWebpackPlugin ({
       inject: true,
       template: 'index.html',
-      excludeChunks: ['server']
+      excludeChunks: ['server', 'login', 'invite']
     }),
     new HtmlInlineScriptPlugin({
       compress: true
-    })
+    }),
   ]
 };
 

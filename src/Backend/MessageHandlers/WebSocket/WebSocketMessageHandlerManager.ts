@@ -52,15 +52,14 @@ class WebSocketMessageHandlerManager {
 
     public static factory(
         socket: SocketSender,
-        rcon: RconSender
+        rcon: RconSender,
+        consoleColorRepository: ConsoleColorsRepository,
+        cacheRepository: CacheRepository,
+        serverRepository: ServerRepository,
+        settingsRepository: SettingsRepository,
+        playersRepository: PlayersRepository,
     ): WebSocketMessageHandlerManager {
         let factory = new WebSocketMessageHandlerManager(socket, rcon);
-
-        let consoleColorRepository = new ConsoleColorsRepository();
-        let cacheRepository = new CacheRepository();
-        let serverRepository = new ServerRepository();
-        let settingsRepository = new SettingsRepository();
-        let playersRepository = new PlayersRepository();
 
         factory.addMessageHandler(new AdminChatHandler(rcon));
         factory.addMessageHandler(new AdminsHandler(rcon));

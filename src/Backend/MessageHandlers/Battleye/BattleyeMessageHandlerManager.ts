@@ -18,10 +18,10 @@ import NullHandler from './NullHandler';
 
 class BattleyeMessageHandlerManager {
     private messageHandlers: BattleyeMessageHandler[];
-    private socket: websocket.Server;
+    private socket: websocket;
 
     public constructor(
-        socket: websocket.Server
+        socket: websocket
     ) {
         this.messageHandlers = [];
         this.socket = socket;
@@ -46,9 +46,7 @@ class BattleyeMessageHandlerManager {
                     return true;
                 }
 
-                this.socket.clients.forEach((client) => {
-                    client.send(JSON.stringify(response));
-                });
+                this.socket.send(JSON.stringify(response));
 
                 return true;
             }
@@ -58,7 +56,7 @@ class BattleyeMessageHandlerManager {
     }
 
     public static factory(
-        socket: websocket.Server,
+        socket: websocket,
         cacheRepo: CacheRepository,
         playerRepo: PlayersRepository,
         serverIp: string

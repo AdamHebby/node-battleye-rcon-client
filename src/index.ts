@@ -114,6 +114,14 @@ $(function () {
         let serverPlayersTable = new DynamicTable($('#server-players'));
         let playersDbTable     = new DynamicTable($('#players-db'));
 
+        playersDbTable.setSearch($('#player-search'), [
+            GUID.key,
+            IpAddress.key,
+            Name.key,
+            Nickname.key,
+            Comment.key
+        ]);
+
         let currentGuids: string[] = [];
 
         currentPlayers.forEach(function (player: Player) {

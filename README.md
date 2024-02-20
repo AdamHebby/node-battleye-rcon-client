@@ -11,6 +11,7 @@ The aim of making this with Node is it can run anywhere, and it's easy to instal
 This will never require anything to exist on the server, and will never require any changes to the server configuration. The only requirement is that the server has Battleye enabled and you have the login credentials.
 
 ## Features
+ - Can be hosted on a remote server or locally
  - Monitoring players connected to the server
  - Monitoring Bans
  - Monitoring Chat
@@ -26,6 +27,9 @@ This will never require anything to exist on the server, and will never require 
  - Keep track of players' previous in-game names and IPs
 
 ## Upcoming Features / TODO
+ - Allow server configuration to be changed, including DB paths
+ - Allow username for each server configuration so admin appears in chat under a friendly name
+ - Change console event colors to be a general console event setting. Allow disabling logging of certain events, changing colors, and setting up notifications.
  - Clean up IP Address resolving
  - Allow banning and test
  - Refactor banning to use specific server events

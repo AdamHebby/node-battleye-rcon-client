@@ -24,7 +24,19 @@ class Nart {
     private lastAutoRefreshPlayers: number = new Date().getTime();
 
     public constructor() {
-        this.socket = new WebSocket(Nart.WEBSOCKET_URL);
+        // get browser cookies
+        let cookies: { [key: string]: string } = {}; // Add index signature
+        document.cookie.split(';').forEach(function (cookie) {
+            let parts = cookie.split('=', 2);
+
+            if (parts.length === 2) {
+                cookies[parts[0].trim()] = decodeURI(parts[1]);
+            }
+        });
+
+        console.log(cookies);
+
+        this.socket = new WebSocket(Nart.WEBSOCKET_URL + '?token=' + (cookies?.nart_socket_token ?? ''));
         this.setupSocket();
 
         this.autoRefreshPlayersInterval = new VariableTimer('AutoRefreshPlayers', () => {

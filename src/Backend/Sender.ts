@@ -9,15 +9,11 @@ declare interface Sender {
 
 class SocketSender implements Sender {
     constructor(
-        private socket: websocket.Server
+        private socket: websocket
     ) {
     }
 
     public send(data: string|MessageSocketResponse): void {
-        if (this.socket.clients.size === 0) {
-            return;
-        }
-
         // if data is string, convert to object
         if (typeof(data) === "string") {
             if (data.toString().trim() === '') {
@@ -43,9 +39,7 @@ class SocketSender implements Sender {
             console.log(`${new Date().toLocaleTimeString()}: RELAYING REPLY ${JSON.stringify(data)}`);
         }
 
-        this.socket.clients.forEach(function (websocket) {
-            websocket.send(JSON.stringify(data));
-        });
+        this.socket.send(JSON.stringify(data));
     }
 
     public reply(original: InboundSocketMessage, response: MessageSocketResponse): void {
