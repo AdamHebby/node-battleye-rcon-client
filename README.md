@@ -27,6 +27,7 @@ This will never require anything to exist on the server, and will never require 
  - Keep track of players' previous in-game names and IPs
 
 ## Upcoming Features / TODO
+ - Detect on the front-end if running on a remote server, display user settings
  - Allow server configuration to be changed, including DB paths
  - Allow username for each server configuration so admin appears in chat under a friendly name
  - Change console event colors to be a general console event setting. Allow disabling logging of certain events, changing colors, and setting up notifications.
@@ -37,7 +38,6 @@ This will never require anything to exist on the server, and will never require 
  - Clean up UI
  - Ability to ban by IP and GUID at the same time - TODO: Refactor the form menu to have a drop-down for the type of ban
  - Ability to ban by previous IPs
- - Search for players by Name, IP, GUID
  - Custom scripts to run in the web interface ?
  - Custom commands / aliases
  - Better theming / custom theming

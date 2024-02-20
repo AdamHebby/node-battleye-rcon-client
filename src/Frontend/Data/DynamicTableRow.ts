@@ -84,7 +84,16 @@ class DynamicTableRow
             });
 
             if (!isNew) {
-                $(onTable).find(`[data-${definedBy}]`).replaceWith(this.jqRow);
+                let r = $(onTable).find(`[data-${definedBy}]`);
+                let isVisible = r.is(':visible');
+
+                if (isVisible) {
+                    this.jqRow.show();
+                } else {
+                    this.jqRow.hide();
+                }
+
+                r.replaceWith(this.jqRow);
             } else {
                 $(onTable).append(this.jqRow);
             }

@@ -18,6 +18,7 @@ class Name extends PlayerData
 
         if (this.previous.length > 0) {
             this.popover(element, this.previous.join('<br>'), 'Previous Names');
+            element.attr(`data-${this.key}-previous`, this.previous.join(', '));
         }
 
         return element;

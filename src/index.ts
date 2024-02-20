@@ -17,7 +17,7 @@ import { PlayerActionContextMenu, PlayerActionContextMenuCallback, PlayerActionC
 import IpLookup from "./Frontend/IpLookup";
 import PlayerDetailsElement from "./Frontend/PlayerDetailsElement";
 import { DynamicTableRow } from "./Frontend/Data/DynamicTableRow";
-import DynamicTable from "./Frontend/Data/DynamicTable";
+import { DynamicTable, DynamicTableSearcher } from "./Frontend/Data/DynamicTable";
 import Generic from "./Frontend/Data/Generic";
 import IpAddress from "./Frontend/Data/IpAddress";
 import Ping from "./Frontend/Data/Ping";
@@ -107,20 +107,61 @@ $(function () {
         }
     }
 
+    $(document).on('keydown', function (e) {
+        let searchId = '';
+        if ($('.active[data-tab-control=players]').length === 1) {
+            searchId = '#player-search';
+        } else if ($('.active[data-tab-control=bans]').length === 1) {
+            searchId = '#ban-search';
+        } else if ($('.active[data-tab-control=players-db]').length === 1) {
+            searchId = '#player-db-search';
+        }
+
+        if (searchId === '' || $(searchId).length === 0 || $(searchId).is(':focus')) {
+            return;
+        }
+
+        if (e.key === 'f' && e.ctrlKey === true && e.shiftKey === false && e.altKey === false && e.metaKey === false) {
+            $(searchId).trigger('focus');
+            e.preventDefault();
+        }
+    });
+
+    let playersDbSearch = (_: any, el: any) => DynamicTableSearcher.search($('#player-db-search'), '#players-db', [
+        GUID.key,
+        IpAddress.key,
+        Name.key,
+        Nickname.key,
+        Comment.key,
+        'last-seen',
+    ]);
+
+    let playersSearch = (_: any, el: any) => DynamicTableSearcher.search($('#player-search'), '#server-players', [
+        GUID.key,
+        IpAddress.key,
+        Name.key,
+        Nickname.key,
+        Comment.key,
+        'last-seen',
+    ]);
+
+    let bansSearch = (e: any, el: any) => DynamicTableSearcher.search($('#ban-search'), '#server-bans', [
+        GUID.key,
+        IpAddress.key,
+        BanReason.key,
+    ]);
+
+
+    $('#player-db-search').on('keyup', playersDbSearch);
+    $('#player-search').on('keyup', playersSearch);
+    $('#ban-search').on('keyup', bansSearch);
+
     nart.eventEmitter.on(ServerEvents.PLAYERS, function (players: {players: Player[], playerRecords: PlayerRecord[]}) {
         let currentPlayers = players.players;
         let allPlayers     = players.playerRecords;
 
         let serverPlayersTable = new DynamicTable($('#server-players'));
         let playersDbTable     = new DynamicTable($('#players-db'));
-
-        playersDbTable.setSearch($('#player-search'), [
-            GUID.key,
-            IpAddress.key,
-            Name.key,
-            Nickname.key,
-            Comment.key
-        ]);
 
         let currentGuids: string[] = [];
 
@@ -221,6 +262,9 @@ $(function () {
                 playerEl.addActionMenu(playerContextMenuActions);
             }
         });
+
+        playersDbSearch($('#player-db-search'), null);
+        playersSearch($('#player-search'), null);
     });
 
     nart.eventEmitter.on(ServerEvents.BANS, function (bans: Ban[]) {
@@ -238,6 +282,7 @@ $(function () {
         serverBansTable.build('id');
 
         BanRemoveContextMenu.addMenu($('#server-bans'), playerUnbanContextActions);
+        bansSearch($('#ban-search'), null);
     });
 
     $('#settings-colors-copy').on('click', function () {

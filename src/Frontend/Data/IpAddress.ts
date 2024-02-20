@@ -18,6 +18,7 @@ class IpAddress extends PlayerData
 
         if (this.previous.length > 0) {
             this.popover(element, this.previous.join('<br>'), 'Previous IPs');
+            element.attr(`data-${this.key}-previous`, this.previous.join(', '));
         }
 
         IpLookup.element(element);

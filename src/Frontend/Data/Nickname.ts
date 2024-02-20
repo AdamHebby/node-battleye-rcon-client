@@ -18,6 +18,7 @@ class Nickname extends PlayerData
 
         if (this.previous.length > 0) {
             this.popover(element, this.previous.join('<br>'), 'Previous Nicknames');
+            element.attr(`data-${this.key}-previous`, this.previous.join(', '));
         }
 
         return element;

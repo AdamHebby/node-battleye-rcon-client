@@ -1,5 +1,4 @@
 import websocket from 'ws';
-// @ts-ignore
 import BattleEyeClient from 'battle-eye-client';
 import ServerRepository from "../Repository/ServerRepository";
 import Server from '../Models/Server';
@@ -125,7 +124,7 @@ class BattleEyeSocketRelay {
                         id: message.id,
                         type: ServerEvents.RCON_CONNECT,
                         data: {
-                            id: relay.cachedAuth?.id,
+                            id: message.data.id,
                         }
                     });
                     return;
@@ -140,6 +139,9 @@ class BattleEyeSocketRelay {
                         type: ServerEvents.RCON_DISCONNECT,
                         data: true
                     });
+                    relay.stopTimers();
+                    relay.rcon?.close();
+                    relay.rcon = null;
                     return;
                 }
 
@@ -155,17 +157,10 @@ class BattleEyeSocketRelay {
 
         this.wss.on('close', function() {
             console.log(`${new Date().toLocaleTimeString()}: Disconnected from Nart`);
-            setTimeout(() => {
-                try {
-                    if (new Date().getTime() - relay.lastMessageDate.getTime() > 60000) {
-                        console.log(`${new Date().toLocaleTimeString()}: No clients, exiting...`);
-                        relay.stopTimers();
-                        relay.rcon?.close();
-                    }
-                } catch (error) {
-                    return;
-                }
-            }, 60000);
+            relay.cachedAuth = null;
+            relay.stopTimers();
+            relay.rcon?.close();
+            relay.rcon = null;
         });
     }
 
