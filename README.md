@@ -94,4 +94,12 @@ npm run start
 
 ### Docker
 
-TODO
+`docker-compose up --build`
+
+Visit `http://localhost:3000` in your browser. HTTPS is available at `https://localhost:3001`.
+
+#### Development
+
+`openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=NC/L=Local/O=Dev/CN=localhost" -keyout ./build/ssl.key -out ./build/ssl.crt`
+
+`docker-compose -f docker-compose.dev.yml up --build`

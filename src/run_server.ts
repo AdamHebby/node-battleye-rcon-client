@@ -1,4 +1,6 @@
 import websocket from 'ws';
+import https from 'https';
+import http from 'http';
 import fs from "fs";
 import { open } from 'openurl';
 import { exec } from 'child_process';
@@ -149,7 +151,7 @@ app.get('/', (req: Request, res: Response) => {
         return;
     }
 
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/pages/index.html');
 });
 
 function jwt(length: number = 256) {
@@ -183,7 +185,7 @@ app.get('/login', (req: Request, res: Response) => {
     session.socketToken = socketToken;
     session.save();
 
-    res.sendFile(__dirname + '/login.html');
+    res.sendFile(__dirname + '/pages/login.html');
 });
 
 app.post('/login', (req: Request, res: Response) => {
@@ -224,7 +226,7 @@ app.get('/invite/:id', (req: Request, res: Response) => {
         return;
     }
 
-    res.sendFile(__dirname + '/invite.html');
+    res.sendFile(__dirname + '/pages/invite.html');
     return;
 });
 
@@ -284,15 +286,22 @@ app.get('/resources/*', (req: Request, res: Response) => {
 });
 
 if (socketsOnly === false) {
-    app.listen(serverPort, () => {
+    https.createServer({
+        key: fs.readFileSync(__dirname + '/ssl.key'),
+        cert: fs.readFileSync(__dirname + '/ssl.crt')
+    }, app).listen(443, () => {
+        console.log(`[server 443]: Server is running at https://localhost:443`);
+    });
+
+    app.listen(80, () => {
         console.log(`[server]: Server is running at http://localhost:${serverPort}`);
     });
 
     if (openBrowser === true) {
         if ('WSLENV' in process.env) {
-            exec(`cmd.exe /C start http://localhost:${serverPort}`);
+            exec(`cmd.exe /C start https://nart.local`);
         } else {
-            open(`http://localhost:${serverPort}`);
+            open(`https://nart.local`);
         }
     }
 }

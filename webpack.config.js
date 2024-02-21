@@ -35,20 +35,22 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'invite.html',
-      filename: 'invite.html',
+      template: 'src/pages/invite.html',
+      filename: 'pages/invite.html',
       chunks: ['invite'],
       inject: false
     }),
     new HtmlWebpackPlugin({
-      template: 'login.html',
-      filename: 'login.html',
+      template: 'src/pages/login.html',
+      filename: 'pages/login.html',
+
       chunks: ['login'],
       inject: false
     }),
     new HtmlWebpackPlugin ({
       inject: true,
-      template: 'index.html',
+      template: 'src/pages/index.html',
+      filename: 'pages/index.html',
       excludeChunks: ['server', 'login', 'invite']
     }),
     new HtmlInlineScriptPlugin({
