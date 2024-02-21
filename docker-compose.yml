@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  nart:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nart
+    ports:
+      - 3000:80
+      - 3001:443
+    command: "node build/run_server.js -b"
