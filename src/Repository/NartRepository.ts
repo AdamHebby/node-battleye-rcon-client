@@ -61,6 +61,10 @@ class NartRepository extends AbstractRepository
             throw new Error('Failed to create user');
         }
 
+        if (password === null) {
+            this.generateInviteLink(id);
+        }
+
         return new NartUser(id, username, permissions);
     }
 

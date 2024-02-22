@@ -2,6 +2,7 @@ import websocket from 'ws';
 import BattleEyeClient from '../../node_modules/battle-eye-client/index';
 import ServerEvents from '../ServerEvents';
 import { InboundSocketMessage, MessageSocketResponse } from './MessageHandlers/AbstractMessageHandler';
+import { Logger } from '../Logger';
 
 declare interface Sender {
     send(data: object|string): void;
@@ -36,7 +37,7 @@ class SocketSender implements Sender {
             data.type !== ServerEvents.COLORS_LIST &&
             data.type !== ServerEvents.SERVERS_LIST
         ) {
-            console.log(`${new Date().toLocaleTimeString()}: RELAYING REPLY ${JSON.stringify(data)}`);
+            Logger.normalLogger().debug(`RELAYING REPLY ${JSON.stringify(data)}`);
         }
 
         this.socket.send(JSON.stringify(data));
@@ -60,7 +61,7 @@ class RconSender implements Sender {
     send(data: string): void {
         if (this.rcon === null) return;
 
-        console.log(`${new Date().toLocaleTimeString()}: RUNNING CMD ${data}`);
+        Logger.normalLogger().debug(`RUNNING CMD ${data}`);
 
         try {
             this.rcon.sendCommand(data);

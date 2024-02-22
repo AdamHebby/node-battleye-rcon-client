@@ -16,6 +16,8 @@ import { NartSession } from '../Models/Session';
 import NartRepository from '../Repository/NartRepository';
 import ConsoleColorsRepository from '../Repository/ConsoleColorsRepository';
 import { NartUser } from '../Models/NartUser';
+import winston from 'winston';
+import { Logger } from '../Logger';
 
 class BattleEyeSocketRelay {
     public wss: websocket;
@@ -36,8 +38,10 @@ class BattleEyeSocketRelay {
     private lastMessageDate: Date = new Date();
 
     private user: NartUser;
+    private logger: winston.Logger;
 
     public constructor(wss: websocket, session: NartSession|null) {
+        this.logger       = Logger.normalLogger('relay.log');
         let nartUserRepo  = NartRepository.repo();
         let user          = nartUserRepo.getUserById(session?.userId ?? 0);
 
@@ -102,8 +106,6 @@ class BattleEyeSocketRelay {
                     relay.settings = relay.settingsRepo.get();
                 }
 
-                console.log(`${new Date().toLocaleTimeString()}: ${message.type.toUpperCase()} HANDLED: ${handled}`);
-
                 if (handled) {
                     return;
                 }
@@ -146,7 +148,7 @@ class BattleEyeSocketRelay {
                 }
 
             } catch (error: Error | any) {
-                console.trace(`${new Date().toLocaleTimeString()}: ERROR: ${error}`);
+                relay.logger.error(`ERROR: ${error}`);
                 relay.socketSend({
                     id: message.id,
                     type: ServerEvents.SOCK_ERROR,
@@ -156,7 +158,7 @@ class BattleEyeSocketRelay {
         });
 
         this.wss.on('close', function() {
-            console.log(`${new Date().toLocaleTimeString()}: Disconnected from Nart`);
+            relay.logger.info(`Disconnected from Nart`);
             relay.cachedAuth = null;
             relay.stopTimers();
             relay.rcon?.close();
@@ -177,8 +179,6 @@ class BattleEyeSocketRelay {
                 data: error
             });
         }
-
-        // console.log(`${new Date().toLocaleTimeString()}: RUNNING CMD ${data}`);
     }
 
     public socketSend(data: MessageSocketResponse|string): void {

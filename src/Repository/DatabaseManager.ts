@@ -1,6 +1,8 @@
-import fs from "fs";
-import Database, { Database as DB } from "better-sqlite3-multiple-ciphers";
+import fs, { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import Database, { Database as DB, SqliteError } from "better-sqlite3-multiple-ciphers";
 import Registry from "winreg";
+import { NartConfig } from "../NartConfig";
+import { Logger } from "../Logger";
 
 enum DatabaseType {
     MAIN = 'main',
@@ -14,27 +16,39 @@ class DatabaseManager
     }
 
     public static getConnection(name: string, password: string|null = null, type: DatabaseType|null = null): DB {
-        let path = this.getPath(name);
-        let db   = new Database(path);
+        let path  = this.getPath(name);
+        let db    = new Database(path);
+        let newDb = false;
 
-        if (password === null) {
+        if (password === null && NartConfig.config().auth.enabled) {
             password = this.getPassword();
 
             if (password === null) {
-                password = this.generatePassword();
+                password = this.generatePassword(NartConfig.config().auth.dbKeyLength);
                 this.storePassword(password);
+                newDb = true;
+            }
+        }
+
+        try {
+            if (newDb) {
                 db.pragma(`rekey='${password}'`);
             } else {
                 db.pragma(`key='${password}'`);
             }
-        } else {
-            db.pragma(`key='${password}'`);
-        }
 
-        if (type === DatabaseType.MAIN || (type === null && name === 'main')) {
-            this.mainSchema(db);
-        } else if (type === DatabaseType.USERS || (type === null && name.startsWith('users/'))) {
-            this.userSchema(db);
+            if (type === DatabaseType.MAIN || (type === null && name === 'main')) {
+                this.mainSchema(db);
+            } else if (type === DatabaseType.USERS || (type === null && name.startsWith('users/'))) {
+                this.userSchema(db);
+            }
+        } catch (error: any) {
+            if (error?.code === 'SQLITE_NOTADB') {
+                Logger.normalLogger().error(`Database at ${path} is not a valid database or is encrypted with a different key`);
+                process.exit(1);
+            }
+
+            throw error;
         }
 
         return db;
@@ -53,48 +67,69 @@ class DatabaseManager
     }
 
     private static storePassword(password: string) {
+        let storage = NartConfig.instance().getStorage();
+        let isWindows = process.platform === 'win32';
+
         try {
-            (new Registry({
-                hive: Registry.HKCU,
-                key:  '\\Software\\Nart'
-            })).create(() => {});
+            if (storage.dbKey.regKey === true && isWindows) {
+                (new Registry({
+                    hive: Registry.HKCU,
+                    key:  '\\Software\\Nart'
+                })).create(() => {});
 
-            let regKey = new Registry({
-                hive: Registry.HKCU,
-                key:  '\\Software\\Nart\\CurrentVersion'
-            });
+                let regKey = new Registry({
+                    hive: Registry.HKCU,
+                    key:  '\\Software\\Nart\\CurrentVersion'
+                });
 
-            if (regKey.arch === null) {
-                throw new Error('Could not determine registry architecture');
+                regKey.create(() => {});
+
+                regKey.set('db_key', 'REG_SZ', password, (e) => {
+                    Logger.normalLogger().error(e);
+                });
+
+                return;
             }
 
-            regKey.create(() => {});
+            if (storage.dbKey.path === undefined || storage.dbKey.path === null) {
+                throw new Error('Could not determine where to store the password');
+            }
 
-            regKey.set('db_key', 'REG_SZ', password, (e) => {
-                console.error(e);
-            });
+            Logger.normalLogger().debug(`Writing password to ${storage.dbKey.path}`)
+            writeFileSync(storage.dbKey.path, password);
         } catch (error) {
-            fs.writeFileSync(process.env.HOME + '/.nart/.pw', password);
+            // TODO: Should we throw an error here rather than falling back?
+            if (storage.dbKey.path === undefined || storage.dbKey.path === null) {
+                throw new Error('Could not determine where to store the password');
+            }
+
+            Logger.normalLogger().debug(`Writing password to ${storage.dbKey.path}`)
+            writeFileSync(storage.dbKey.path, password);
         }
     }
 
     private static getPassword(): null|string {
-        if (fs.existsSync(process.env.HOME + '/.nart/.pw')) {
-            return fs.readFileSync(process.env.HOME + '/.nart/.pw').toString();
+        let storage = NartConfig.instance().getStorage();
+        let isWindows = process.platform === 'win32';
+
+        if (storage.dbKey.path && existsSync(storage.dbKey.path)) {
+            return readFileSync(storage.dbKey.path).toString();
         }
 
         try {
-            let regKey = new Registry({
-                hive: Registry.HKCU,
-                key:  '\\Software\\Nart\\CurrentVersion'
-            });
-
-            if (regKey.arch !== null && regKey.valueExists('db_key', () => {})) {
-                regKey.get('db_key', (_, res) => {
-                    if (res?.value !== undefined) {
-                        return res.value;
-                    }
+            if (storage.dbKey.regKey === true && isWindows) {
+                let regKey = new Registry({
+                    hive: Registry.HKCU,
+                    key:  '\\Software\\Nart\\CurrentVersion'
                 });
+
+                if (regKey.arch !== null && regKey.valueExists('db_key', () => {})) {
+                    regKey.get('db_key', (_, res) => {
+                        if (res?.value !== undefined) {
+                            return res.value;
+                        }
+                    });
+                }
             }
         } catch (error) {
         }
@@ -103,22 +138,17 @@ class DatabaseManager
     }
 
     private static getPath(name: string): string {
-        let appDataOrHome = process.env?.APPDATA ?? process.env.HOME;
+        let storageRoot = NartConfig.instance().getStorage();
 
-        if (appDataOrHome === undefined) {
-            throw new Error('Could not determine app data or home directory');
+        if (existsSync(storageRoot.path) === false) {
+            mkdirSync(storageRoot.path);
         }
 
-        if (fs.existsSync(appDataOrHome + '/.nart') === false) {
-            fs.mkdirSync(appDataOrHome + '/.nart');
+        if (existsSync(`${storageRoot.path}/users`) === false) {
+            mkdirSync(`${storageRoot.path}/users`);
         }
 
-        if (fs.existsSync(appDataOrHome + '/.nart/users') === false) {
-            fs.mkdirSync(appDataOrHome + '/.nart/users');
-        }
-
-
-        return `${appDataOrHome}/.nart/${name}.db`;
+        return `${storageRoot.path}/${name}.db`;
     }
 
     private static userSchema(db: DB) {
