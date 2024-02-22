@@ -28,7 +28,6 @@ This will never require anything to exist on the server, and will never require 
 
 ## Upcoming Features / TODO
  - Detect on the front-end if running on a remote server, display user settings
- - Allow server configuration to be changed, including DB paths
  - Allow username for each server configuration so admin appears in chat under a friendly name
  - Change console event colors to be a general console event setting. Allow disabling logging of certain events, changing colors, and setting up notifications.
  - Clean up IP Address resolving
@@ -41,7 +40,6 @@ This will never require anything to exist on the server, and will never require 
  - Custom scripts to run in the web interface ?
  - Custom commands / aliases
  - Better theming / custom theming
- - Better logging
  - Docker support
  - Notifications for certain events
 
