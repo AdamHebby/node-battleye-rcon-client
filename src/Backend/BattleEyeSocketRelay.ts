@@ -29,7 +29,7 @@ class BattleEyeSocketRelay {
     public cachedAuth: Server | null = null;
     public serverRepo: ServerRepository;
     public settingsRepo: SettingsRepository;
-    public playersRepo: PlayersRepository;
+    public playersRepo: IPlayersRepository;
     public cacheRepo: CacheRepository;
     private settings: Settings;
     private playerTimer: VariableTimer;
@@ -198,11 +198,6 @@ class BattleEyeSocketRelay {
             this.playersRepo,
             this.rcon?.ip ?? this.cachedAuth.address
         );
-
-        // DEBUG
-        setTimeout(() => {
-            BattleyeMessageHandler.handleMessage('Player #0 Nart (151.224.162.126:2304) connected');
-        }, 2000);
 
         let relay = this;
         // @ts-ignore

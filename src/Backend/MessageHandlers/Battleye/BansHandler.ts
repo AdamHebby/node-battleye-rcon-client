@@ -38,11 +38,13 @@ class BansHandler extends BattleyeMessageHandler {
             let ban = banData[i].trim().split(/\s+/);
             let isIp = ban[1].split('.').length === 4;
 
+            let minutesLeft: number = parseInt(ban[2]);
+
             bans.push(Ban.fromJson({
                 id: parseInt(ban[0]),
                 ip: isIp ? ban[1] : null,
                 guid: isIp ? null : ban[1],
-                minutesLeft: parseInt(ban[2]),
+                minutesLeft: isNaN(minutesLeft) ? -1 : minutesLeft,
                 reason: ban.slice(3).join(' ')
             }));
         }

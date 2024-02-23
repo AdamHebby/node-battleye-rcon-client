@@ -1,19 +1,19 @@
 import Player from "../../../Models/Player";
 import PlayerRecord from "../../../Models/PlayerRecord";
 import CacheRepository from "../../../Repository/CacheRepository";
-import PlayersRepository from "../../../Repository/PlayersRepository";
+import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 import ServerEvents from "../../../ServerEvents";
 import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 
 class PlayersHandler extends BattleyeMessageHandler {
     cacheRepo: CacheRepository;
-    playersRepo: PlayersRepository;
+    playersRepo: IPlayersRepository;
     serverIp: string;
 
     public constructor(
         cacheRepo: CacheRepository,
-        playersRepo: PlayersRepository,
+        playersRepo: IPlayersRepository,
         serverIp: string
     ) {
         super();
@@ -73,7 +73,7 @@ class PlayersHandler extends BattleyeMessageHandler {
             players.push(new Player({
                 id: parseInt(player[0]),
                 ip: player[1],
-                ping: player[2],
+                ping: parseInt(player[2]),
                 guid: player[3].replace('(OK)', ''),
                 name: player.slice(4).join(' '),
                 status: status,

@@ -3,7 +3,25 @@ import PlayerRecord from "../Models/PlayerRecord";
 import AbstractRepository from "./AbstractRepository";
 import DatabaseManager from "./DatabaseManager";
 
-class PlayersRepository extends AbstractRepository
+export declare interface IPlayersRepository {
+    upsert(player: PlayerRecord): PlayerRecord;
+    upsertMany(players: PlayerRecord[]): PlayerRecord[];
+    all(): PlayerRecord[];
+    getPreviousNames(id: number): string[];
+    getPreviousIps(id: number): string[];
+    updateComment(id: number, comment: string): void;
+    updateNickname(id: number, nickname: string): void;
+    find(id: number): PlayerRecord|null;
+    findByGuid(guid: string): PlayerRecord|null;
+    findByIp(ip: string): PlayerRecord|null;
+    findByIpWithoutPort(ip: string): PlayerRecord|null;
+    findByName(name: string): PlayerRecord|null;
+    findRecentByName(name: string): PlayerRecord|null;
+    delete(id: number): void;
+    truncate(): void;
+}
+
+class PlayersRepository extends AbstractRepository implements IPlayersRepository
 {
     public static repo(user: NartUser): PlayersRepository
     {
@@ -135,6 +153,7 @@ class PlayersRepository extends AbstractRepository
     }
 
     public findByIpWithoutPort(ip: string): PlayerRecord|null {
+        console.error('findByIpWithoutPort', ip);
         let player = this.one('SELECT * FROM players WHERE lastIp LIKE ?', [ip.split(':')[0] + '%'])
 
         if (player === undefined || player === null) {
@@ -173,13 +192,13 @@ class PlayersRepository extends AbstractRepository
         return PlayerRecord.fromJson(player);
     }
 
-    public delete(id: number) {
+    public delete(id: number): void {
         let db = this.getConnection();
         let stmt = db.prepare('DELETE FROM players WHERE id = ?');
         stmt.run(id);
     }
 
-    public truncate() {
+    public truncate(): void {
         let db = this.getConnection();
         let stmt = db.prepare('DELETE FROM players');
         stmt.run();

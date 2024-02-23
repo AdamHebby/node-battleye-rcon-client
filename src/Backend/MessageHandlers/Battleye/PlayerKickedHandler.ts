@@ -1,12 +1,12 @@
-import PlayersRepository from "../../../Repository/PlayersRepository";
+import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 import ServerEvents from "../../../ServerEvents";
 import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 
 class PlayerKickedHandler extends BattleyeMessageHandler {
-    playersRepo: PlayersRepository;
+    playersRepo: IPlayersRepository;
     public constructor(
-        playersRepo: PlayersRepository
+        playersRepo: IPlayersRepository
     ) {
         super();
         this.playersRepo = playersRepo;

@@ -1,18 +1,18 @@
 import Player from "../../../Models/Player";
 import PlayerRecord from "../../../Models/PlayerRecord";
 import CacheRepository from "../../../Repository/CacheRepository";
-import PlayersRepository from "../../../Repository/PlayersRepository";
+import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 import ServerEvents from "../../../ServerEvents";
 import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 
 class PlayerDisconnectHandler extends BattleyeMessageHandler {
     cacheRepo: CacheRepository;
-    playersRepo: PlayersRepository;
+    playersRepo: IPlayersRepository;
 
     public constructor(
         cacheRepo: CacheRepository,
-        playersRepo: PlayersRepository
+        playersRepo: IPlayersRepository
     ) {
         super();
         this.cacheRepo = cacheRepo;
@@ -30,7 +30,7 @@ class PlayerDisconnectHandler extends BattleyeMessageHandler {
         if (player !== null && player.guid !== null) {
             let pCache = this.cacheRepo.get('players');
 
-            if (player !== null && pCache !== null) {
+            if (player !== null && pCache !== null && pCache !== undefined && pCache.length > 0) {
                 // @ts-ignore Wont accept that I already check that player is not null
                 this.cacheRepo.set('players', pCache.filter((p: Player) => p.guid !== player.guid));
             }

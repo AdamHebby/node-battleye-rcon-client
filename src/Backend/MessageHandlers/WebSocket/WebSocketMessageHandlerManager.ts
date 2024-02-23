@@ -24,7 +24,7 @@ import ConsoleColorsRepository from "../../../Repository/ConsoleColorsRepository
 import CacheRepository from "../../../Repository/CacheRepository";
 import ServerRepository from "../../../Repository/ServerRepository";
 import SettingsRepository from "../../../Repository/SettingsRepository";
-import PlayersRepository from "../../../Repository/PlayersRepository";
+import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 
 class WebSocketMessageHandlerManager {
     private messageHandlers: WebSocketMessageHandler[] = [];

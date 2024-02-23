@@ -1,6 +1,13 @@
 import Database, { Database as DB } from "better-sqlite3-multiple-ciphers";
 
-abstract class AbstractRepository
+declare interface IRepository {
+    getConnection(): DB;
+    insertInto(table: string, data: {key: string, value: any}[], insertId: boolean): number|null;
+    updateTable(table: string, data: {key: string, value: any}[], where: {key: string, value: any}): void;
+    deleteFrom(table: string, where: {key: string, value: any}): void;
+}
+
+abstract class AbstractRepository implements IRepository
 {
     public constructor(private db: DB) {
     }
@@ -50,7 +57,7 @@ abstract class AbstractRepository
         stmt.run(where.value);
     }
 
-    protected generatePassword(length: number = 256) {
+    protected generatePassword(length: number = 256): string {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let password = '';
 

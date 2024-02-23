@@ -5,7 +5,7 @@ class Ban {
     public minutesLeft: number;
     public reason: string;
 
-    private expiresAt: Date;
+    private expiresAt?: Date|null = null;
 
     constructor(id: number, ip: string|null, guid: string|null, minutesLeft: number, reason: string) {
         this.id = id;
@@ -13,6 +13,10 @@ class Ban {
         this.guid = guid;
         this.minutesLeft = minutesLeft;
         this.reason = reason;
+
+        if (minutesLeft === -1) {
+            return;
+        }
 
         this.expiresAt = new Date();
         this.expiresAt.setMinutes(this.expiresAt.getMinutes() + minutesLeft);
@@ -33,46 +37,30 @@ class Ban {
     }
 
     public isExpired(): boolean {
+        if (!this.expiresAt && this.minutesLeft === -1) {
+            return false;
+        }
+
+        if (!this.expiresAt) {
+            return true;
+        }
+
         return new Date() > this.expiresAt;
     }
 
     public getExpiresAtClean(): string {
+        if (!this.expiresAt) {
+            return 'Permanent';
+        }
         return this.expiresAt.toLocaleString();
     }
 
-    public getExpiresAt(): Date {
+    public getExpiresAt(): Date|null {
+        if (!this.expiresAt) {
+            return null;
+        }
+
         return this.expiresAt;
-    }
-
-    public getExpiresIn(): string {
-        let seconds = Math.floor((this.expiresAt.getTime() - new Date().getTime()) / 1000);
-        let minutes = Math.floor(seconds / 60);
-        let hours = Math.floor(minutes / 60);
-        let days = Math.floor(hours / 24);
-
-        seconds = seconds % 60;
-        minutes = minutes % 60;
-        hours = hours % 24;
-
-        let expiresIn = '';
-
-        if (days > 0) {
-            expiresIn += days + 'd ';
-        }
-
-        if (hours > 0) {
-            expiresIn += hours + 'h ';
-        }
-
-        if (minutes > 0) {
-            expiresIn += minutes + 'm ';
-        }
-
-        if (seconds > 0) {
-            expiresIn += seconds + 's';
-        }
-
-        return expiresIn;
     }
 }
 

@@ -11,8 +11,7 @@ class NullHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.match(/\: \(Global\) (.*?) connected$/) !== null
-            || message.content === '';
+        return message.content.trim() === '';
     }
 }
 
