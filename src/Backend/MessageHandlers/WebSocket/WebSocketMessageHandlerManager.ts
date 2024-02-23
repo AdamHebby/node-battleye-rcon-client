@@ -29,12 +29,6 @@ import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 class WebSocketMessageHandlerManager {
     private messageHandlers: WebSocketMessageHandler[] = [];
 
-    public constructor(
-        private socketSender: SocketSender,
-        private rconSender: RconSender,
-    ) {
-    }
-
     public addMessageHandler(messageHandler: WebSocketMessageHandler) {
         this.messageHandlers.push(messageHandler);
     }
@@ -59,7 +53,7 @@ class WebSocketMessageHandlerManager {
         settingsRepository: SettingsRepository,
         playersRepository: IPlayersRepository,
     ): WebSocketMessageHandlerManager {
-        let factory = new WebSocketMessageHandlerManager(socket, rcon);
+        let factory = new WebSocketMessageHandlerManager();
 
         factory.addMessageHandler(new AdminChatHandler(rcon));
         factory.addMessageHandler(new AdminsHandler(rcon));

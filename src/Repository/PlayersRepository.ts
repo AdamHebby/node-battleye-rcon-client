@@ -3,7 +3,7 @@ import PlayerRecord from "../Models/PlayerRecord";
 import AbstractRepository from "./AbstractRepository";
 import DatabaseManager from "./DatabaseManager";
 
-export declare interface IPlayersRepository {
+export interface IPlayersRepository {
     upsert(player: PlayerRecord): PlayerRecord;
     upsertMany(players: PlayerRecord[]): PlayerRecord[];
     all(): PlayerRecord[];

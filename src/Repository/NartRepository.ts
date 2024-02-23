@@ -3,7 +3,19 @@ import { NartUser, Permissions } from "../Models/NartUser";
 import { hashSync, compareSync, hash } from 'bcrypt';
 import DatabaseManager from "./DatabaseManager";
 
-class NartRepository extends AbstractRepository
+export interface INartRepository {
+    login(username: string, password: string): NartUser|null;
+    takeInviteLink(user: NartUser, newPassword: string): void;
+    generate(username: string, permissions: Permissions, password: string|null): NartUser;
+    getUserByUsername(username: string): NartUser|null;
+    generateInviteLink(userId: number): string;
+    getInviteLinkByUser(user: NartUser): string|null;
+    getUserByInviteLink(link: string): NartUser|null;
+    count(): number;
+    getUserById(id: number): NartUser|null;
+}
+
+class NartRepository extends AbstractRepository implements INartRepository
 {
     public static repo(): NartRepository
     {

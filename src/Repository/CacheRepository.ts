@@ -1,4 +1,16 @@
-class CacheRepository {
+export interface ICacheRepository {
+    set(key: string, value: any): void;
+    get(key: string): any;
+    delete(key: string): void;
+    clear(): void;
+    has(key: string): boolean;
+    keys(): string[];
+    values(): any[];
+    size(): number;
+}
+
+class CacheRepository implements ICacheRepository
+{
     private cache: { [key: string]: any };
 
     constructor() {

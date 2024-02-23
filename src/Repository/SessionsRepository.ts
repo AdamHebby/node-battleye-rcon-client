@@ -2,6 +2,9 @@ import AbstractRepository from "./AbstractRepository";
 import DatabaseManager from "./DatabaseManager";
 import { NartSession, SessionRecord } from "../Models/Session";
 
+export interface ISessionsRepository {
+    getSessionByToken(token: string): NartSession | null;
+}
 
 class SessionsRepository extends AbstractRepository
 {

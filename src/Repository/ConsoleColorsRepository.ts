@@ -3,7 +3,12 @@ import {ConsoleColor} from "../Models/ConsoleColors";
 import DatabaseManager from "./DatabaseManager";
 import { NartUser } from "../Models/NartUser";
 
-class ConsoleColorsRepository extends AbstractRepository
+export interface IConsoleColorsRepository {
+    upsert(colors: ConsoleColor[]): ConsoleColor[];
+    all(): ConsoleColor[];
+}
+
+class ConsoleColorsRepository extends AbstractRepository implements IConsoleColorsRepository
 {
     public static repo(user: NartUser): ConsoleColorsRepository
     {

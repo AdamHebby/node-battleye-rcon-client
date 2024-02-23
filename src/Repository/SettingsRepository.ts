@@ -3,6 +3,11 @@ import Settings from '../Models/Settings';
 import { NartUser } from "../Models/NartUser";
 import DatabaseManager from "./DatabaseManager";
 
+export interface ISettingsRepository {
+    upsert(settings: Settings): Settings;
+    get(): Settings;
+}
+
 class SettingsRepository extends AbstractRepository
 {
     public static repo(user: NartUser): SettingsRepository

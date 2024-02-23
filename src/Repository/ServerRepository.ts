@@ -3,7 +3,14 @@ import Server from '../Models/Server';
 import { NartUser } from "../Models/NartUser";
 import DatabaseManager from "./DatabaseManager";
 
-class ServerRepository extends AbstractRepository
+export interface IServerRepository {
+    upsert(server: Server): Server;
+    all(): Server[];
+    find(id: number): Server|null;
+    delete(id: number): boolean;
+}
+
+class ServerRepository extends AbstractRepository implements IServerRepository
 {
     public static repo(user: NartUser): ServerRepository
     {
