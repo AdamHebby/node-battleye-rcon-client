@@ -57,7 +57,7 @@ class WebSocketMessageHandlerManager {
         cacheRepository: CacheRepository,
         serverRepository: ServerRepository,
         settingsRepository: SettingsRepository,
-        playersRepository: PlayersRepository,
+        playersRepository: IPlayersRepository,
     ): WebSocketMessageHandlerManager {
         let factory = new WebSocketMessageHandlerManager(socket, rcon);
 
