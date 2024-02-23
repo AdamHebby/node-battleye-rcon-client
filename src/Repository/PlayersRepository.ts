@@ -23,7 +23,7 @@ export declare interface IPlayersRepository {
 
 class PlayersRepository extends AbstractRepository implements IPlayersRepository
 {
-    public static repo(user: NartUser): PlayersRepository
+    public static repo(user: NartUser): IPlayersRepository
     {
         return new PlayersRepository(
             DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)

@@ -2,7 +2,7 @@ import websocket from 'ws';
 import { Message } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 import PlayerDisconnectHandler from './PlayerDisconnectHandler';
-import PlayersRepository from '../../../Repository/PlayersRepository';
+import { IPlayersRepository } from '../../../Repository/PlayersRepository';
 import CacheRepository from '../../../Repository/CacheRepository';
 import PlayersHandler from './PlayersHandler';
 import AdminsHandler from './AdminsHandler';
@@ -58,7 +58,7 @@ class BattleyeMessageHandlerManager {
     public static factory(
         socket: websocket,
         cacheRepo: CacheRepository,
-        playerRepo: PlayersRepository,
+        playerRepo: IPlayersRepository,
         serverIp: string
     ): BattleyeMessageHandlerManager {
         let factory = new BattleyeMessageHandlerManager(socket);

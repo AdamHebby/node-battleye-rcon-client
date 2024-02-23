@@ -6,7 +6,7 @@ import ServerEvents from "../ServerEvents";
 import SettingsRepository from '../Repository/SettingsRepository';
 import Settings from '../Models/Settings';
 import VariableTimer from '../VariableTimer';
-import PlayersRepository from '../Repository/PlayersRepository';
+import PlayersRepository, { IPlayersRepository } from '../Repository/PlayersRepository';
 import CacheRepository from '../Repository/CacheRepository';
 import BattleyeMessageHandlerManager from '../Backend/MessageHandlers/Battleye/BattleyeMessageHandlerManager';
 import { SocketSender, RconSender } from '../Backend/Sender';
