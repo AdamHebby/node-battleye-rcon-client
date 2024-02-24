@@ -10,6 +10,9 @@
     "build:client": "npx webpack",
     "build": "npm run build:bin && npm run build:server && npm run build:client",
     "start": "node build/run_server.js",
+    "lint": "eslint --ext .ts src",
+    "jest": "jest -i",
+    "test": "npm run lint && npm run jest",
     "generate:config": "node build/bin/generate-config.js",
     "postinstall": "npm run build && npm run generate:config"
   },
