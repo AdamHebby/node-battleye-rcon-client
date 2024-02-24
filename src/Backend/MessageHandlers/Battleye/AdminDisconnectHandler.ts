@@ -17,7 +17,7 @@ class AdminDisconnectHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.match(/^RCon admin \#\d+ \(.*?\) logged out$/) !== null;
+        return message.content.match(/^RCon admin #\d+ \(.*?\) logged out$/) !== null;
     }
 }
 

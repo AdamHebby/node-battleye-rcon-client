@@ -1,6 +1,6 @@
 import ServerEvents from "../../../ServerEvents";
 import { RconSender } from "../../Sender";
-import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
+import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class AdminsHandler extends WebSocketMessageHandler {
@@ -10,7 +10,7 @@ class AdminsHandler extends WebSocketMessageHandler {
         super();
     }
 
-    public handle(message: InboundSocketMessage): void {
+    public handle(): void {
         this.rconSender.send("admins");
     }
 

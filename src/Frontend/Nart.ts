@@ -1,5 +1,4 @@
-// @ts-ignore
-import Ban from "../Models/Ban";
+import Ban, { TBan } from "../Models/Ban";
 import $ from "jquery";
 import { EventEmitter } from "events";
 import ServerEvents from "../ServerEvents";
@@ -7,8 +6,6 @@ import Settings from "../Models/Settings";
 import SettingsManager from "./SettingsManager";
 import VariableTimer from "../VariableTimer";
 import Console from "./Console";
-import { Tooltip } from "bootstrap";
-import Player from "../Models/Player";
 
 // https://www.battleye.com/support/documentation/
 class Nart {
@@ -65,7 +62,7 @@ class Nart {
             this.eventEmitter.emit(ServerEvents.SOCK_CLOSE);
             this.socket = null;
             this.reconnectTimer.start();
-        }
+        };
 
         this.socket.onopen = () => {
             this.reconnectTimer.stop();
@@ -86,30 +83,70 @@ class Nart {
         let ignoreLogEvents = [
             ServerEvents.PLAYERS,
             ServerEvents.BANS,
-            ServerEvents.ADMINS,
+            // ServerEvents.ADMINS,
 
             ServerEvents.SETTINGS_LIST,
-            ServerEvents.SETTINGS_SAVE,
+            // ServerEvents.SETTINGS_SAVE,
 
-            ServerEvents.SERVERS_LIST,
+            // ServerEvents.SERVERS_LIST,
             ServerEvents.SERVER_DELETE,
             ServerEvents.SERVERS_SAVE,
 
-            ServerEvents.COLORS_LIST,
-            ServerEvents.COLORS_SAVE,
+            // ServerEvents.COLORS_LIST,
+            // ServerEvents.COLORS_SAVE,
 
             ServerEvents.CHAT_PLAYER_JOIN,
             ServerEvents.CHAT_PLAYER_LEAVE,
         ];
 
+
+        let emitLog = [
+            ServerEvents.CHAT_ADMIN_JOIN,
+            ServerEvents.CHAT_PLAYER_JOIN,
+            ServerEvents.CHAT_ADMIN_MESSAGE,
+            ServerEvents.CHAT_PLAYER_LEAVE,
+        ];
+
+        let emitOnly = [
+            ServerEvents.COLORS_LIST,
+            ServerEvents.COLORS_SAVE,
+            ServerEvents.ADMINS,
+            ServerEvents.SETTINGS_SAVE,
+            ServerEvents.SERVERS_LIST,
+            ServerEvents.PLAYERS,
+            ServerEvents.VERSION,
+            ServerEvents.RCON_DISCONNECT,
+            ServerEvents.RCON_CONNECT,
+        ];
+
         this.socket.onmessage = (event: MessageEvent) => {
             let data = JSON.parse(event.data);
 
-            if (data.type === ServerEvents.CHAT_ADMIN_JOIN) {
-                this.eventEmitter.emit(ServerEvents.CHAT_ADMIN_JOIN, data.data);
-                Console.getInstance().logEvent(ServerEvents.CHAT_ADMIN_JOIN, data.data.message);
+            if (data.type === ServerEvents.PLAYERS) {
+                this.lastAutoRefreshPlayers = new Date().getTime();
+            }
+
+            if (data.type === ServerEvents.RCON_DISCONNECT) {
+                this.autoRefreshPlayersInterval.stop();
+            }
+
+            if (data.type === ServerEvents.RCON_CONNECT) {
+                this.serverId = data.data.id;
+                this.autoRefreshPlayersInterval.start(500);
+            }
+
+            if (emitOnly.includes(data.type)) {
+                this.eventEmitter.emit(data.type, data.data);
                 return;
             }
+
+            if (emitLog.includes(data.type)) {
+                this.eventEmitter.emit(data.type, data.data);
+                Console.getInstance().logEvent(data.type, data.data.message);
+                return;
+            }
+
+            console.debug(data);
 
             if (data.data !== undefined && data.data.message !== undefined) {
                 let id: number = -1;
@@ -137,71 +174,23 @@ class Nart {
                 }
             }
 
-            if (data.type === ServerEvents.CHAT_PLAYER_JOIN) {
-                this.eventEmitter.emit(ServerEvents.CHAT_PLAYER_JOIN, data.data);
-
-                Console.getInstance().logEvent(ServerEvents.CHAT_PLAYER_JOIN, data.data.message);
-                return;
-            }
-
-            if (data.type === ServerEvents.CHAT_PLAYER_LEAVE) {
-                this.eventEmitter.emit(ServerEvents.CHAT_PLAYER_LEAVE, data.data);
-
-                Console.getInstance().logEvent(ServerEvents.CHAT_PLAYER_LEAVE, data.data.message);
-                return;
-            }
-
-            if (data.type === ServerEvents.COLORS_LIST) {
-                this.eventEmitter.emit(ServerEvents.COLORS_LIST, data.data);
-                return;
-            }
-
-            if (data.type === ServerEvents.COLORS_SAVE) {
-                this.eventEmitter.emit(ServerEvents.COLORS_SAVE, data.data);
-                return;
-            }
-
             if (data.type === ServerEvents.SETTINGS_LIST) {
                 let manager = SettingsManager.getInstance();
                 manager.update(data.data as Settings);
 
                 this.autoRefreshTime = Math.min(
-                    manager.settings.get('bans-refresh-interval') * 1000,
-                    manager.settings.get('players-refresh-interval') * 1000,
-                    manager.settings.get('admins-refresh-interval') * 1000,
-                )
+                    (manager.settings.get('bans-refresh-interval') as number) * 1000,
+                    (manager.settings.get('players-refresh-interval') as number) * 1000,
+                    (manager.settings.get('admins-refresh-interval') as number) * 1000,
+                );
 
                 this.eventEmitter.emit(ServerEvents.SETTINGS_LIST, data.data);
                 return;
             }
-
-            if (data.type === ServerEvents.ADMINS) {
-                this.eventEmitter.emit(ServerEvents.ADMINS, data.data);
-                return;
-            }
-
-            if (data.type === ServerEvents.SETTINGS_SAVE) {
-                this.eventEmitter.emit(ServerEvents.SETTINGS_SAVE, data);
-                return;
-            }
-
-            if (data.type === ServerEvents.SERVERS_LIST) {
-                this.eventEmitter.emit(ServerEvents.SERVERS_LIST, data);
-                return;
-            }
-
-            if (data.type === ServerEvents.PLAYERS) {
-                this.lastAutoRefreshPlayers = new Date().getTime();
-                let players = data.data;
-
-                this.eventEmitter.emit(ServerEvents.PLAYERS, players);
-                return;
-            }
-
             if (data.type === ServerEvents.BANS) {
                 let bans: Ban[] = [];
 
-                data.data.forEach(function (ban: any) {
+                data.data.forEach(function (ban: TBan) {
                     bans.push(Ban.fromJson(ban));
                 });
 
@@ -210,28 +199,11 @@ class Nart {
                 return;
             }
 
-            if (data.type === ServerEvents.VERSION) {
-                this.eventEmitter.emit(ServerEvents.VERSION, data.data);
-                return;
-            }
-
-            if (data.type === ServerEvents.RCON_DISCONNECT) {
-                this.autoRefreshPlayersInterval.stop();
-                this.eventEmitter.emit(ServerEvents.RCON_DISCONNECT);
-                return;
-            }
-
-            if (data.type === ServerEvents.RCON_CONNECT) {
-                this.serverId = data.data.id;
-                this.eventEmitter.emit(ServerEvents.RCON_CONNECT, this.serverId);
-                this.autoRefreshPlayersInterval.start(500);
-                return;
-            }
-
             if (!ignoreLogEvents.includes(data.type)) {
                 Console.getInstance().logEvent(data.type, data);
+                return;
             }
-        }
+        };
     }
 
     public static getInstance(): Nart {
@@ -242,7 +214,7 @@ class Nart {
         return Nart.instance;
     }
 
-    public sendCommand(command: string, data: any = []): void {
+    public sendCommand(command: string, data: unknown = []): void {
         let id = Math.random().toString(36).substring(7);
 
         this.socket?.send(JSON.stringify({
@@ -270,11 +242,11 @@ class Nart {
     }
 
     public banUser(id: number, reason: string, duration: number) {
-        // this.sendCommand(Events.USER_BAN, {id: id, reason: reason, duration: duration});
+        this.sendCommand(ServerEvents.USER_BAN, {id: id, reason: reason, duration: duration});
     }
 
     public unbanUser(id: number) {
-        // this.sendCommand(Events.USER_UNBAN, {id: id});
+        this.sendCommand(ServerEvents.USER_UNBAN, {id: id});
     }
 }
 

@@ -3,7 +3,6 @@ import $ from 'jquery';
 
 abstract class PlayerData {
     public abstract key: string;
-    // public abstract jQuery(): JQuery<HTMLElement>;
 
     public data: string | number | null = null;
 

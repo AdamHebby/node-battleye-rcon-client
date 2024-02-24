@@ -55,7 +55,7 @@ class PlayersHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.startsWith('Players on server:')
+        return message.content.startsWith('Players on server:');
     }
 
     private static parsePlayersData(message: string): Player[] {
@@ -71,6 +71,7 @@ class PlayersHandler extends BattleyeMessageHandler {
             let player = playerData[i].replace('(Lobby)', '').replace(/\s+/g, ' ').trim().split(' ');
 
             players.push(new Player({
+                dbId: -1,
                 id: parseInt(player[0]),
                 ip: player[1],
                 ping: parseInt(player[2]),

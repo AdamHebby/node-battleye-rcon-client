@@ -24,7 +24,7 @@ class Ping extends PlayerData
             color = 'text-danger';
         }
 
-        return $(this.html(`${this.key} ${color}`))
+        return $(this.html(`${this.key} ${color}`));
     }
 }
 

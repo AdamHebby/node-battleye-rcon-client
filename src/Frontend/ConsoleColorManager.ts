@@ -13,13 +13,12 @@ class ConsoleColorManager {
     public constructor(consoleColorsConfigForm: JQuery<HTMLElement>) {
         this.consoleColorsConfigForm = consoleColorsConfigForm;
 
-        let self = this;
-        $(this.consoleColorsConfigForm).find('.color-group').each(function () {
-            let eventConfig = $(this).data('event') as string;
-            let enabled     = $(this).find('input[type="checkbox"]').is(':checked') as boolean;
-            let color       = $(this).find('input[type="color"]').val() as string;
+        $(this.consoleColorsConfigForm).find('.color-group').each((_: number, el: HTMLElement) =>{
+            let eventConfig = $(el).data('event') as string;
+            let enabled     = $(el).find('input[type="checkbox"]').is(':checked') as boolean;
+            let color       = $(el).find('input[type="color"]').val() as string;
 
-            self.consoleColors.push(new ConsoleColor(eventConfig as ServerEvents, color, enabled));
+            this.consoleColors.push(new ConsoleColor(eventConfig as ServerEvents, color, enabled));
         });
 
         $(this.consoleColorsConfigForm).on('change', 'input', (event) => {

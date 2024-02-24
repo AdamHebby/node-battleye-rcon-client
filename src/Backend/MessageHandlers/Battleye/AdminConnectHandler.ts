@@ -17,7 +17,7 @@ class AdminConnectHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.match(/^RCon admin \#\d+ \(.*?\) logged in$/) !== null;
+        return message.content.match(/^RCon admin #\d+ \(.*?\) logged in$/) !== null;
     }
 }
 

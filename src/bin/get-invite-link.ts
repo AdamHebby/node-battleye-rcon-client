@@ -1,7 +1,8 @@
+import PromptSync from "prompt-sync";
 import NartRepository from "../Repository/NartRepository";
 
-let prompt: any = require('prompt-sync')();
 let nartRepo = NartRepository.repo();
+const prompt = PromptSync();
 let username = prompt("Enter a username: ");
 
 if (username === null) {

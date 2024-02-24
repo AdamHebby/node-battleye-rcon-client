@@ -35,14 +35,14 @@ class DynamicTableRow
     private compare(element: JQuery<HTMLElement>, definedBy: string): boolean
     {
         let valid = true;
-        let row = this;
 
         $(element)
             .find(`[data-${definedBy}="${this.getData(definedBy)}"]`)
-            .each(function (this: HTMLElement, index: number, element: HTMLElement) {
-                for (let data in row.rowData) {
-                    if (($(element).attr(`data-${data}`) ?? '').toString() !== (row.getData(data) ?? '').toString()) {
+            .each((_: number, element: HTMLElement) => {
+                for (let data in this.rowData) {
+                    if (($(element).attr(`data-${data}`) ?? '').toString() !== (this.getData(data) ?? '').toString()) {
                         valid = false;
+                        console.debug(`Data mismatch for ${definedBy} (${this.getData(definedBy)}) ${data} - ${$(element).attr(`data-${data}`)} !== ${this.getData(data)}`);
                     }
                 }
             });
@@ -52,7 +52,8 @@ class DynamicTableRow
 
     public build(onTable: JQuery<HTMLElement>, definedBy: string): void
     {
-        let isNew = $(onTable).find(`[data-${definedBy}="${this.getData(definedBy)}"]`).length === 0;
+        let existingRow = $(onTable).find(`[data-${definedBy}="${this.getData(definedBy)}"]`);
+        let isNew = existingRow.length === 0;
 
         if (isNew || !this.compare(onTable, definedBy)) {
             this.jqRow = $('<tr></tr>').addClass(this.classList);
@@ -76,16 +77,15 @@ class DynamicTableRow
                 this.jqRow.append(td);
             }
 
-            $(onTable).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
+            $(onTable).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement) {
                 let popover = Popover.getInstance(this);
                 popover?.hide();
                 popover?.disable();
                 popover?.dispose();
             });
 
-            if (!isNew) {
-                let r = $(onTable).find(`[data-${definedBy}]`);
-                let isVisible = r.is(':visible');
+            if (existingRow.length > 0 && existingRow !== undefined && existingRow !== null) {
+                let isVisible = existingRow.is(':visible');
 
                 if (isVisible) {
                     this.jqRow.show();
@@ -93,7 +93,7 @@ class DynamicTableRow
                     this.jqRow.hide();
                 }
 
-                r.replaceWith(this.jqRow);
+                existingRow.replaceWith(this.jqRow);
             } else {
                 $(onTable).append(this.jqRow);
             }

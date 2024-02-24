@@ -21,6 +21,8 @@ export interface IPlayersRepository {
     truncate(): void;
 }
 
+declare type TScalar = string|number|boolean|null;
+
 class PlayersRepository extends AbstractRepository implements IPlayersRepository
 {
     public static repo(user: NartUser): IPlayersRepository
@@ -31,7 +33,6 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     }
 
     public upsert(player: PlayerRecord): PlayerRecord {
-        let db = this.getConnection();
         let previous = this.findByGuid(player.guid);
 
         if (previous !== undefined && previous !== null) {
@@ -81,14 +82,18 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
             player.previousNames = this.getPreviousNames(player.id);
             player.previousIps   = this.getPreviousIps(player.id);
 
-            return PlayerRecord.fromJson(player)
+            return PlayerRecord.fromJson(player);
         });
     }
 
     public getPreviousNames(id: number): string[] {
         let db = this.getConnection();
         let stmt = db.prepare('SELECT name FROM player_previous_names WHERE player_id = ?');
-        let names: any[] = stmt.all(id);
+        let names = stmt.all(id) as { name: string }[]|[]|null|undefined;
+
+        if (names === null || names === undefined) {
+            return [];
+        }
 
         return names.map((name) => name.name);
     }
@@ -96,7 +101,12 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     public getPreviousIps(id: number): string[] {
         let db = this.getConnection();
         let stmt = db.prepare('SELECT ip FROM player_previous_ips WHERE player_id = ?');
-        let ips: any[] = stmt.all(id);
+
+        let ips = stmt.all(id) as { ip: string }[]|[]|null|undefined;
+
+        if (ips === null || ips === undefined) {
+            return [];
+        }
 
         return ips.map((ip) => ip.ip);
     }
@@ -114,7 +124,7 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     }
 
     public find(id: number): PlayerRecord|null {
-        let player = this.one('SELECT * FROM players WHERE id = ?', [id])
+        let player = this.one('SELECT * FROM players WHERE id = ?', [id]);
 
         if (player === undefined || player === null) {
             return null;
@@ -127,7 +137,7 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     }
 
     public findByGuid(guid: string): PlayerRecord|null {
-        let player = this.one('SELECT * FROM players WHERE guid = ?', [guid])
+        let player = this.one('SELECT * FROM players WHERE guid = ?', [guid]);
 
         if (player === undefined || player === null) {
             return null;
@@ -140,7 +150,7 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     }
 
     public findByIp(ip: string): PlayerRecord|null {
-        let player = this.one('SELECT * FROM players WHERE lastIp = ?', [ip])
+        let player = this.one('SELECT * FROM players WHERE lastIp = ?', [ip]);
 
         if (player === undefined || player === null) {
             return null;
@@ -154,7 +164,7 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
 
     public findByIpWithoutPort(ip: string): PlayerRecord|null {
         console.error('findByIpWithoutPort', ip);
-        let player = this.one('SELECT * FROM players WHERE lastIp LIKE ?', [ip.split(':')[0] + '%'])
+        let player = this.one('SELECT * FROM players WHERE lastIp LIKE ?', [ip.split(':')[0] + '%']);
 
         if (player === undefined || player === null) {
             return null;
@@ -167,7 +177,7 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     }
 
     public findByName(name: string): PlayerRecord|null {
-        let player = this.one('SELECT * FROM players WHERE name = ?', [name.trim()])
+        let player = this.one('SELECT * FROM players WHERE name = ?', [name.trim()]);
 
         if (player === undefined || player === null) {
             return null;
@@ -180,7 +190,7 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
     }
 
     public findRecentByName(name: string): PlayerRecord|null {
-        let player = this.one('SELECT * FROM players WHERE name = ? ORDER BY lastSeenDate DESC LIMIT 1', [name.trim()])
+        let player = this.one('SELECT * FROM players WHERE name = ? ORDER BY lastSeenDate DESC LIMIT 1', [name.trim()]);
 
         if (player === undefined || player === null) {
             return null;
@@ -204,14 +214,14 @@ class PlayersRepository extends AbstractRepository implements IPlayersRepository
         stmt.run();
     }
 
-    private one(sql: string, params: any[]): null | PlayerRecord {
+    private one(sql: string, params: TScalar[]): null | PlayerRecord {
         let db = this.getConnection();
         let stmt = db.prepare(sql);
 
         return stmt.get(params) as PlayerRecord | null;
     }
 
-    private many(sql: string, params: any[]): PlayerRecord[] {
+    private many(sql: string, params: TScalar[]): PlayerRecord[] {
         let db = this.getConnection();
         let stmt = db.prepare(sql);
 

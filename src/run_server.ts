@@ -60,13 +60,6 @@ if (args.includes('--config') || args.includes('-c')) {
 
 const config = NartConfig.config(configPath);
 
-// @ts-ignore
-global.config = config;
-
-interface NartCookies {
-    [key: string]: string;
-}
-
 const wss = new websocket.Server({ port: config.port.websocket });
 
 let router = new WebRouter();
@@ -101,7 +94,10 @@ wss.on('connection', function connection(socket: websocket, req: IncomingMessage
             try {
                 (new BattleEyeSocketRelay(socket, session)).listenToWebsocket();
             } catch (error) {
-                logger.error(error);
+                // log trace
+                console.debug(error);
+                logger.error(error as string);
+                logger.error('Failed to create relay');
             }
         }
     }

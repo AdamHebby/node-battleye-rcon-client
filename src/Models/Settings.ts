@@ -1,6 +1,8 @@
+declare type TScalar = string|number|boolean|null;
+
 interface Setting {
     key: string;
-    value: any;
+    value: TScalar;
 }
 
 class Settings {
@@ -40,7 +42,7 @@ class Settings {
         return settings;
     }
 
-    public get(key: string): any {
+    public get(key: string): TScalar {
         let setting = this.find(key);
 
         if (setting) {
@@ -50,7 +52,17 @@ class Settings {
         return null;
     }
 
-    public set(key: string, value: any): void {
+    public getInt(key: string): null|number {
+        let setting = this.find(key);
+
+        if (setting && setting.value !== null && setting.value !== undefined) {
+            return parseInt(setting.value.toString());
+        }
+
+        return null;
+    }
+
+    public set(key: string, value: TScalar): void {
         let setting = this.find(key);
 
         if (setting) {

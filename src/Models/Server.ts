@@ -1,4 +1,13 @@
-class Server {
+export declare type TServer = {
+    id: number;
+    name: string;
+    address: string;
+    port: number;
+    password: string;
+    lastConnected: Date|null;
+};
+
+class Server implements TServer {
     public id: number = 0;
     public name: string = "";
     public address: string;
@@ -22,18 +31,18 @@ class Server {
         this.lastConnected = lastConnected;
     }
 
-    public static fromJson(json: any): Server {
-        return new Server(json.id, json.name, json.address, json.port, json.password, new Date(json.lastConnected));
+    public static fromJson(json: TServer): Server {
+        return new Server(json.id, json.name, json.address, json.port, json.password, new Date(json.lastConnected?.toString() ?? new Date().toISOString()));
     }
 
-    public toJson(): any {
+    public toJson(): TServer {
         return {
             id: this.id,
             name: this.name,
             address: this.address,
             port: this.port,
             password: this.password,
-            lastConnected: this.lastConnected?.toISOString()
+            lastConnected: this.lastConnected
         };
     }
 

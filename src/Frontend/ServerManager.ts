@@ -57,37 +57,37 @@ class ServerSetting {
 
         tr.append($('<td>')
             .append($('<input>')
-            .attr('type', 'text')
-            .attr('name', 'name')
-            .val(this.name)
-            .attr('required', 'required')));
+                .attr('type', 'text')
+                .attr('name', 'name')
+                .val(this.name)
+                .attr('required', 'required')));
 
         tr.append($('<td>')
             .append($('<input>')
-            .attr('type', 'text')
-            .attr('name', 'address')
-            .val(this.address)
-            .attr('required', 'required')));
+                .attr('type', 'text')
+                .attr('name', 'address')
+                .val(this.address)
+                .attr('required', 'required')));
 
         tr.append($('<td>')
             .append($('<input>')
-            .attr('type', 'number')
-            .attr('name', 'port')
-            .val(this.port)
-            .attr('required', 'required')));
+                .attr('type', 'number')
+                .attr('name', 'port')
+                .val(this.port)
+                .attr('required', 'required')));
 
         tr.append($('<td>')
             .append($('<input>')
-            .attr('type', 'password')
-            .attr('name', 'password')
-            .val(this.password)
-            .attr('required', 'required')));
+                .attr('type', 'password')
+                .attr('name', 'password')
+                .val(this.password)
+                .attr('required', 'required')));
 
         tr.append($('<td>')
             .append($('<button>')
-            .addClass('btn btn-danger')
-            .attr('data-server-action', 'delete')
-            .text('Delete')));
+                .addClass('btn btn-danger')
+                .attr('data-server-action', 'delete')
+                .text('Delete')));
 
         return tr;
     }
@@ -98,7 +98,8 @@ class ServerSetting {
             name: this.name,
             address: this.address,
             port: this.port,
-            password: this.password
+            password: this.password,
+            lastConnected: null,
         });
     }
 
@@ -247,7 +248,7 @@ class ServerManager {
         $(this.tableBody).empty();
     }
 
-    public input(event: JQuery.TriggeredEvent<HTMLElement, undefined, any, any>): void {
+    public input(_: unknown): void {
         this.servers.forEach((server) => {
             let tr = $(this.tableBody).find('tr[data-temp-id="' + server.tempId + '"]');
 

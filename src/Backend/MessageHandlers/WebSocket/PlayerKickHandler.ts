@@ -21,7 +21,7 @@ class PlayerKickHandler extends WebSocketMessageHandler {
 
         let playersCache = this.cacheRepository.get('players');
 
-        if (playersCache === null) {
+        if (playersCache === null || playersCache === undefined || !Array.isArray(playersCache) || playersCache.length === 0) {
             return;
         }
 

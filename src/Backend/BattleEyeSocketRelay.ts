@@ -35,7 +35,6 @@ class BattleEyeSocketRelay {
     private playerTimer: VariableTimer;
     private banTimer: VariableTimer;
     private adminsTimer: VariableTimer;
-    private lastMessageDate: Date = new Date();
 
     private user: NartUser;
     private logger: winston.Logger;
@@ -61,49 +60,47 @@ class BattleEyeSocketRelay {
 
         this.playerTimer = new VariableTimer('players', () => {
             this.command("players");
-        }, parseInt(this.settings.get('players-refresh-interval') ?? 5) * 1000);
+        }, (this.settings.getInt('players-refresh-interval') ?? 5) * 1000);
 
         this.banTimer = new VariableTimer('bans', () => {
             this.command("bans");
-        }, parseInt(this.settings.get('bans-refresh-interval') ?? 5) * 1000);
+        }, (this.settings.getInt('bans-refresh-interval') ?? 5) * 1000);
 
         this.adminsTimer = new VariableTimer('admins', () => {
             this.command("admins");
-        }, parseInt(this.settings.get('admins-refresh-interval') ?? 5) * 1000);
+        }, (this.settings.getInt('admins-refresh-interval') ?? 5) * 1000);
     }
 
     public listenToWebsocket(): void
     {
-        let relay = this;
-        if (relay.rcon !== null && relay.cachedAuth !== null) {
-            relay.socketSend({
+        if (this.rcon !== null && this.cachedAuth !== null) {
+            this.socketSend({
                 id: null,
                 type: ServerEvents.RCON_CONNECT,
                 data: {
-                    id: relay.cachedAuth.id,
+                    id: this.cachedAuth.id,
                 }
             });
         }
 
         let websocketMessageHandler = WebSocketMessageHandlerManager.factory(
-            relay.socketSender,
-            relay.rconSender,
+            this.socketSender,
+            this.rconSender,
             ConsoleColorsRepository.repo(this.user),
-            relay.cacheRepo,
-            relay.serverRepo,
-            relay.settingsRepo,
-            relay.playersRepo
+            this.cacheRepo,
+            this.serverRepo,
+            this.settingsRepo,
+            this.playersRepo
         );
 
-        this.wss.on('message', function (msg: websocket.RawData) {
-            relay.lastMessageDate = new Date();
+        this.wss.on('message', (msg: websocket.RawData) => {
             let message = JSON.parse(msg.toString());
 
             try {
                 let handled = websocketMessageHandler.handleMessage(message);
 
                 if (message.type === ServerEvents.SETTINGS_SAVE) {
-                    relay.settings = relay.settingsRepo.get();
+                    this.settings = this.settingsRepo.get();
                 }
 
                 if (handled) {
@@ -111,18 +108,18 @@ class BattleEyeSocketRelay {
                 }
 
                 if (message.type === ServerEvents.RCON_CONNECT) {
-                    if (relay.rcon !== null) {
+                    if (this.rcon !== null) {
                         return;
                     }
 
-                    let s = relay.serverRepo.find(message.data.id);
+                    let s = this.serverRepo.find(message.data.id);
 
                     if (s === null) {
                         return;
                     }
 
-                    relay.getBattleEyeClient(s);
-                    relay.socketSend({
+                    this.getBattleEyeClient(s);
+                    this.socketSend({
                         id: message.id,
                         type: ServerEvents.RCON_CONNECT,
                         data: {
@@ -133,36 +130,36 @@ class BattleEyeSocketRelay {
                 }
 
                 if (message.type === ServerEvents.RCON_DISCONNECT) {
-                    relay.stopTimers();
-                    relay.cachedAuth = null;
-                    relay.rcon?.close();
-                    relay.socketSend({
+                    this.stopTimers();
+                    this.cachedAuth = null;
+                    this.rcon?.close();
+                    this.socketSend({
                         id: message.id,
                         type: ServerEvents.RCON_DISCONNECT,
                         data: true
                     });
-                    relay.stopTimers();
-                    relay.rcon?.close();
-                    relay.rcon = null;
+                    this.stopTimers();
+                    this.rcon?.close();
+                    this.rcon = null;
                     return;
                 }
 
-            } catch (error: Error | any) {
-                relay.logger.error(`ERROR: ${error}`);
-                relay.socketSend({
+            } catch (error: unknown) {
+                this.logger.error(`ERROR: ${error}`);
+                this.socketSend({
                     id: message.id,
                     type: ServerEvents.SOCK_ERROR,
-                    data: error.toString()
+                    data: String(error)
                 });
             }
         });
 
-        this.wss.on('close', function() {
-            relay.logger.info(`Disconnected from Nart`);
-            relay.cachedAuth = null;
-            relay.stopTimers();
-            relay.rcon?.close();
-            relay.rcon = null;
+        this.wss.on('close', () => {
+            this.logger.info(`Disconnected from Nart`);
+            this.cachedAuth = null;
+            this.stopTimers();
+            this.rcon?.close();
+            this.rcon = null;
         });
     }
 
@@ -199,19 +196,21 @@ class BattleEyeSocketRelay {
             this.rcon?.ip ?? this.cachedAuth.address
         );
 
-        let relay = this;
-        // @ts-ignore
-        this.rcon?.messageHandler = function (message: string) {
+        if (this.rcon === null || this.rcon.messageHandler === null || this.rcon.timeoutHandler === null) {
+            return;
+        }
+
+        this.rcon.messageHandler = (message: string) => {
             if (message === 'Login Failed') {
-                relay.socketSend({
+                this.socketSend({
                     type: ServerEvents.CHAT_ERROR,
                     data: message
                 });
 
-                relay.stopTimers();
-                relay.cachedAuth = null;
-                relay.rcon?.close();
-                relay.socketSend({
+                this.stopTimers();
+                this.cachedAuth = null;
+                this.rcon?.close();
+                this.socketSend({
                     id: null,
                     type: ServerEvents.RCON_DISCONNECT,
                     data: true
@@ -220,20 +219,19 @@ class BattleEyeSocketRelay {
             }
 
             if (!BattleyeMessageHandler.handleMessage(message)) {
-                relay.socketSend({
+                this.socketSend({
                     type: ServerEvents.MESSAGE,
                     data: message
                 });
             }
         };
 
-        // @ts-ignore
-        this.rcon?.timeoutHandler = function () {
-            relay.rcon = null;
-            relay.rconSender.updateRcon(null);
+        this.rcon.timeoutHandler = () => {
+            this.rcon = null;
+            this.rconSender.updateRcon(null);
 
-            if (relay.cachedAuth !== null) {
-                relay.getBattleEyeClient(relay.cachedAuth)
+            if (this.cachedAuth !== null) {
+                this.getBattleEyeClient(this.cachedAuth);
             }
         };
 
@@ -241,9 +239,9 @@ class BattleEyeSocketRelay {
     }
 
     public updateTimers(): void {
-        this.playerTimer.setTime(this.settings.get('players-refresh-interval') * 1000);
-        this.banTimer.setTime(this.settings.get('bans-refresh-interval') * 1000);
-        this.adminsTimer.setTime(this.settings.get('admins-refresh-interval') * 1000);
+        this.playerTimer.setTime((this.settings.getInt('players-refresh-interval') ?? 5) * 1000);
+        this.banTimer.setTime((this.settings.getInt('bans-refresh-interval') ?? 5) * 1000);
+        this.adminsTimer.setTime((this.settings.getInt('admins-refresh-interval') ?? 5) * 1000);
     }
 
     public stopTimers(): void {

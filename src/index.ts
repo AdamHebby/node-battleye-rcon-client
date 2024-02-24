@@ -98,14 +98,14 @@ $(function () {
             });
             return;
         }
-    }
+    };
 
     const playerUnbanContextActions: BanRemoveContextMenuCallback = function (action: string, data: BanRemoveContextMenuCallbackData) {
         if (action === 'ban_remove' && data.id !== null) {
             nart.unbanUser(data.id);
             return;
         }
-    }
+    };
 
     $(document).on('keydown', function (e) {
         let searchId = '';
@@ -127,7 +127,7 @@ $(function () {
         }
     });
 
-    let playersDbSearch = (_: any, el: any) => DynamicTableSearcher.search($('#player-db-search'), '#players-db', [
+    let playersDbSearch = () => DynamicTableSearcher.search($('#player-db-search'), '#players-db', [
         GUID.key,
         IpAddress.key,
         Name.key,
@@ -136,7 +136,7 @@ $(function () {
         'last-seen',
     ]);
 
-    let playersSearch = (_: any, el: any) => DynamicTableSearcher.search($('#player-search'), '#server-players', [
+    let playersSearch = () => DynamicTableSearcher.search($('#player-search'), '#server-players', [
         GUID.key,
         IpAddress.key,
         Name.key,
@@ -145,7 +145,7 @@ $(function () {
         'last-seen',
     ]);
 
-    let bansSearch = (e: any, el: any) => DynamicTableSearcher.search($('#ban-search'), '#server-bans', [
+    let bansSearch = () => DynamicTableSearcher.search($('#ban-search'), '#server-bans', [
         GUID.key,
         IpAddress.key,
         BanReason.key,
@@ -208,7 +208,7 @@ $(function () {
 
         $('#server-info-players').text(currentPlayers.length);
 
-        $(document).find('player').each(function (el) {
+        $(document).find('player').each(function () {
             let id = $(this).attr('data-id');
             let guid = $(this).attr('data-guid');
             let player: Player | undefined;
@@ -263,8 +263,8 @@ $(function () {
             }
         });
 
-        playersDbSearch($('#player-db-search'), null);
-        playersSearch($('#player-search'), null);
+        playersDbSearch();
+        playersSearch();
     });
 
     nart.eventEmitter.on(ServerEvents.BANS, function (bans: Ban[]) {
@@ -282,7 +282,7 @@ $(function () {
         serverBansTable.build('id');
 
         BanRemoveContextMenu.addMenu($('#server-bans'), playerUnbanContextActions);
-        bansSearch($('#ban-search'), null);
+        bansSearch();
     });
 
     $('#settings-colors-copy').on('click', function () {
@@ -308,7 +308,7 @@ $(function () {
         let colors: ConsoleColor[] = [];
 
         text.split('\n').forEach(function (line: string) {
-            let [event, eq, color, c, enabled] = line.split(/(\=|,)/g).map((s: string) => s.trim());
+            let [event, _a, color, _b, enabled] = line.split(/(=|,)/g).map((s: string) => s.trim());
 
             colors.push(new ConsoleColor(event as ServerEvents, color, enabled === '1'));
         });
@@ -341,8 +341,8 @@ $(function () {
         if ($(`.tab[data-tab="${tab}"]`).length) {
             $(`.tab[data-tab-group="${group}"]`).hide();
             $(`.tab[data-tab="${tab}"]`).show();
-            $(`[data-tab-control-group="${group}"]`).removeClass('active')
-            $(`[data-tab-control="${tab}"]`).addClass('active')
+            $(`[data-tab-control-group="${group}"]`).removeClass('active');
+            $(`[data-tab-control="${tab}"]`).addClass('active');
         }
     });
 
@@ -362,16 +362,16 @@ $(function () {
         $('#server-refresh-status').text('Never');
     };
 
-    nart.eventEmitter.on(ServerEvents.RCON_CONNECT, function (id: number) {
-        jqServerConnected(id);
+    nart.eventEmitter.on(ServerEvents.RCON_CONNECT, function (data: { id: number }) {
+        jqServerConnected(data.id);
     });
 
-    nart.eventEmitter.on(ServerEvents.RCON_DISCONNECT, function (response: {data: boolean}) {
+    nart.eventEmitter.on(ServerEvents.RCON_DISCONNECT, function () {
         jqServerDisconnected();
     });
 
-    nart.eventEmitter.on(ServerEvents.RCON_RECONNECT, function (id: number) {
-        jqServerConnected(id);
+    nart.eventEmitter.on(ServerEvents.RCON_RECONNECT, function (data: { id: number }) {
+        jqServerConnected(data.id);
     });
 
     nart.eventEmitter.on(ServerEvents.ADMINS, function (data: { id: number, ip: string, port: number}[]) {
@@ -410,11 +410,11 @@ $(function () {
             $('#server-connect').prop('disabled', false);
         });
 
-        $('#settings-config-save').on('click', function (e) {
+        $('#settings-config-save').on('click', function () {
             nart.sendCommand(ServerEvents.SETTINGS_SAVE, settingsManager.settings);
         });
 
-        $('#settings-colors-save').on('click', function (e) {
+        $('#settings-colors-save').on('click', function () {
             nart.sendCommand(ServerEvents.COLORS_SAVE, consoleColorsManager.save());
         });
 
@@ -426,22 +426,22 @@ $(function () {
             nart.sendCommand(ServerEvents.SERVER_DELETE, {id: server.id});
         };
 
-        nart.eventEmitter.addListener(ServerEvents.SERVERS_LIST, function (servers: {data: Server[]}) {
+        nart.eventEmitter.addListener(ServerEvents.SERVERS_LIST, function (servers: Server[]) {
             let previousSelected = $('#server-selection option:selected').val();
             $('#server-selection').empty();
             $('#server-selection').append('<option value="0">SERVER SELECT</option>');
 
-            servers.data.forEach(function (server: Server) {
+            servers.forEach(function (server: Server) {
                 let selected = nart.serverId === server.id ? 'selected' : '';
                 $('#server-selection').append(`<option value="${server.id}" ${selected}>${server.name}</option>`);
             });
 
             $('#server-selection').val(parseInt(previousSelected?.toString() || '0'));
             if ($('#server-selection option:selected').length === 0) {
-                $('#server-selection').val('0');
+                $('#server-selection').val(0);
             }
 
-            serverManager.update(servers.data);
+            serverManager.update(servers);
         });
 
         nart.eventEmitter.addListener(ServerEvents.COLORS_LIST, function (colors: ConsoleColor[]) {

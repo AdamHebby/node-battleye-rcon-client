@@ -56,7 +56,7 @@ class PlayerDetailsElement
         this.gameId = player?.id ?? null;
         this.guid = dbRecord.guid;
         this.name = dbRecord.name;
-        this.nickname = dbRecord.nickname
+        this.nickname = dbRecord.nickname;
         this.status = player?.status ?? 'Not in game';
 
         $(this.jqElement)

@@ -46,10 +46,10 @@ class SettingsManager {
             let input = this.settingsConfigForm.find(`input[name="${setting.key}"]`);
 
             if (input.length > 0) {
-                if (input.attr('type') === 'checkbox') {
+                if (input.attr('type') === 'checkbox' && typeof setting.value === 'number') {
                     input.prop('checked', setting.value > 0);
                 } else {
-                    input.val(setting.value);
+                    input.val(setting.value?.toString() ?? '');
                 }
             }
         }

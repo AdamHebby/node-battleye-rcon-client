@@ -7,7 +7,7 @@ class IpLookup
 
     public static async getCountryCode(ip: string): Promise<string>
     {
-        ip = IpLookup.clean(ip)
+        ip = IpLookup.clean(ip);
 
         return new Promise((resolve, reject) => {
             if (this.cache[ip] !== undefined) {
@@ -37,54 +37,28 @@ class IpLookup
 
     public static async elements(element: JQuery<HTMLElement>): Promise<void>
     {
-        return new Promise(async (resolve, reject) => {
-            let address = element.find('.ip-address');
+        let address = element.find('.ip-address');
 
-            for (let i = 0; i < address.length; i++) {
-                await this.element($(address[i]));
-            }
-
-            resolve();
-        });
+        for (let i = 0; i < address.length; i++) {
+            await this.element($(address[i]));
+        }
     }
 
     public static async element(element: JQuery<HTMLElement>): Promise<void>
     {
-        return new Promise(async (resolve, reject) => {
-            if (element.find('.ip-flag').length > 0) {
-                resolve();
-                return;
-            }
+        if (element.find('.ip-flag').length > 0) {
+            return;
+        }
 
-            let ip = IpLookup.clean(element.text());
+        let ip = IpLookup.clean(element.text());
 
-            if (ip.length === 0) {
-                reject();
-                return;
-            }
+        if (ip.length === 0) {
+            return;
+        }
 
-            let countryCode = await this.getCountryFlagFromIp(ip);
+        let countryCode = await this.getCountryFlagFromIp(ip);
 
-            $(`<img src="${countryCode}" class="ip-flag" />&nbsp;`).prependTo($(element));
-
-            resolve();
-        });
-    }
-
-    public static getElement(element: JQuery<HTMLElement>): Promise<JQuery<HTMLElement>>
-    {
-        return new Promise(async (resolve, reject) => {
-            let ip = IpLookup.clean(element.text());
-
-            if (ip.length === 0) {
-                reject();
-                return;
-            }
-
-            let countryCode = await this.getCountryFlagFromIp(ip);
-
-            resolve($(`<img src="${countryCode}" class="ip-flag" />&nbsp;`));
-        });
+        $(`<img src="${countryCode}" class="ip-flag" />&nbsp;`).prependTo($(element));
     }
 
     public static clean(ip: string): string

@@ -1,6 +1,12 @@
 import ServerEvents from "../ServerEvents";
 
-class ConsoleColor {
+declare type TConsoleColor = {
+    event: ServerEvents;
+    color: string;
+    enabled: boolean|number;
+};
+
+class ConsoleColor implements TConsoleColor {
     public event: ServerEvents;
     public color: string;
     public enabled: boolean|number;
@@ -11,11 +17,11 @@ class ConsoleColor {
         this.enabled = enabled;
     }
 
-    public static fromJson(json: any): ConsoleColor {
-        return new ConsoleColor(json.event, json.color, json.enabled);
+    public static fromJson(json: TConsoleColor): ConsoleColor {
+        return new ConsoleColor(json.event, json.color, Boolean(json.enabled));
     }
 
-    public toJson(): any {
+    public toJson(): TConsoleColor {
         return {
             event: this.event,
             color: this.color,

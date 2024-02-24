@@ -28,11 +28,12 @@ class PlayerDisconnectHandler extends BattleyeMessageHandler {
         player = this.playersRepo.findRecentByName(name);
 
         if (player !== null && player.guid !== null) {
-            let pCache = this.cacheRepo.get('players');
+            let pCache = this.cacheRepo.get('players') as Player[]|null|undefined;
 
             if (player !== null && pCache !== null && pCache !== undefined && pCache.length > 0) {
-                // @ts-ignore Wont accept that I already check that player is not null
-                this.cacheRepo.set('players', pCache.filter((p: Player) => p.guid !== player.guid));
+                this.cacheRepo.set('players', pCache.filter(
+                    (p: Player) => player !== null && p.guid !== player.guid)
+                );
             }
         }
 

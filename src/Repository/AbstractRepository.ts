@@ -1,10 +1,12 @@
-import Database, { Database as DB } from "better-sqlite3-multiple-ciphers";
+import { Database as DB } from "better-sqlite3-multiple-ciphers";
+
+declare type TScalar = string|number|boolean|null;
 
 declare interface IRepository {
     getConnection(): DB;
-    insertInto(table: string, data: {key: string, value: any}[], insertId: boolean): number|null;
-    updateTable(table: string, data: {key: string, value: any}[], where: {key: string, value: any}): void;
-    deleteFrom(table: string, where: {key: string, value: any}): void;
+    insertInto(table: string, data: {key: string, value: TScalar}[], insertId: boolean): number|null;
+    updateTable(table: string, data: {key: string, value: TScalar}[], where: {key: string, value: TScalar}): void;
+    deleteFrom(table: string, where: {key: string, value: TScalar}): void;
 }
 
 abstract class AbstractRepository implements IRepository
@@ -16,7 +18,7 @@ abstract class AbstractRepository implements IRepository
         return this.db;
     }
 
-    public insertInto(table: string, data: {key: string, value: any}[], insertId: boolean = false): number|null {
+    public insertInto(table: string, data: {key: string, value: TScalar}[], insertId: boolean = false): number|null {
         let db = this.getConnection();
         let keys = data.map((d) => d.key).join(', ');
         let values = data.map((d) => d.value);
@@ -37,7 +39,7 @@ abstract class AbstractRepository implements IRepository
         return null;
     }
 
-    public updateTable(table: string, data: {key: string, value: any}[], where: {key: string, value: any}): void {
+    public updateTable(table: string, data: {key: string, value: TScalar}[], where: {key: string, value: TScalar}): void {
         let db = this.getConnection();
         let set = data.map((d) => `${d.key} = ?`).join(', ');
         let values = data.map((d) => d.value);
@@ -48,7 +50,7 @@ abstract class AbstractRepository implements IRepository
         stmt.run([...values, where.value]);
     }
 
-    public deleteFrom(table: string, where: {key: string, value: any}): void {
+    public deleteFrom(table: string, where: {key: string, value: TScalar}): void {
         let db = this.getConnection();
         let whereStr = `${where.key} = ?`;
 

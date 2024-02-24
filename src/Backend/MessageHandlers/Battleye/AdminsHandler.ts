@@ -30,7 +30,7 @@ class AdminsHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.startsWith('Connected RCon admins:')
+        return message.content.startsWith('Connected RCon admins:');
     }
 }
 

@@ -1,6 +1,6 @@
 import AbstractRepository from "./AbstractRepository";
 import { NartUser, Permissions } from "../Models/NartUser";
-import { hashSync, compareSync, hash } from 'bcrypt';
+import { hashSync, compareSync } from 'bcrypt';
 import DatabaseManager from "./DatabaseManager";
 
 export interface INartRepository {
@@ -13,6 +13,17 @@ export interface INartRepository {
     getUserByInviteLink(link: string): NartUser|null;
     count(): number;
     getUserById(id: number): NartUser|null;
+}
+
+export interface INartRepositoryUser {
+    id: number;
+    username: string;
+    password: string;
+    permissions: number;
+    db_key: string;
+    has_logged_in: boolean;
+    created_at: string;
+    last_login: string|null;
 }
 
 class NartRepository extends AbstractRepository implements INartRepository
@@ -85,7 +96,7 @@ class NartRepository extends AbstractRepository implements INartRepository
         let db = this.getConnection();
         let stmt = db.prepare('SELECT * FROM nart_users WHERE username = ?');
 
-        let result = stmt.get(username);
+        let result = stmt.get(username) as INartRepositoryUser|null|undefined;
 
         if (result === undefined || result === null) {
             return null;
@@ -150,32 +161,13 @@ class NartRepository extends AbstractRepository implements INartRepository
         let db = this.getConnection();
         let stmt = db.prepare('SELECT * FROM nart_users WHERE id = ?');
 
-        let result = stmt.get(id) as {
-            id: number,
-            username: string,
-            password: string,
-            permissions: number,
-            db_key: string,
-            has_logged_in: boolean,
-            created_at: string,
-            last_login: string|null,
-        };
+        let result = stmt.get(id) as INartRepositoryUser|null|undefined;
 
         if (result === undefined || result === null) {
             return null;
         }
 
-        return NartUser.fromJson({
-            id: result.id,
-            username: result.username,
-            password: '',
-            dbKey: result.db_key,
-            permissions: result.permissions,
-            password_hash: result.password,
-            has_logged_in: result.has_logged_in,
-            created_at: new Date(result.created_at),
-            last_login: result.last_login === null ? null : new Date(result.last_login),
-        });
+        return NartUser.fromJson(result);
     }
 }
 

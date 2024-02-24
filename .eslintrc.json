@@ -1,0 +1,45 @@
+{
+    "$schema": "https://json.schemastore.org/eslintrc",
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "prefer-const": "off",
+        "indent": ["error", 4],
+        "semi": ["error", "always"],
+        "quotes": ["off"],
+        "no-undef": "off",
+        "no-constant-condition": "off",
+        "no-empty": "off",
+        "no-prototype-builtins": "off",
+        "no-useless-escape": "warn",
+        "camelcase": [
+            "warn",
+            {
+                "properties": "always",
+                "ignoreDestructuring": true
+            }
+        ],
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_"
+            }
+        ],
+        "no-unused-vars": "off"
+    }
+}

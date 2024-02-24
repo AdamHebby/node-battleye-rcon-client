@@ -18,6 +18,7 @@ declare type TNartConfigStorageReg = {
 }
 
 declare type TNartConfig = {
+    $schema?: string,
     hostname: string,
     port: {
         http: number;
@@ -213,8 +214,8 @@ class NartConfig {
         return NartConfig.config().storage.unix as TNartConfigStoragePath;
     }
 
-    public static schema(): any {
-        return NartConfigSchema.valueOf();
+    public static schema(): object {
+        return NartConfigSchema.valueOf() as object;
     }
 
     public static default(): TNartConfig {
@@ -240,4 +241,4 @@ export {
     defaultConfig as DefaultNartConfig,
     TNartConfigStoragePath,
     TNartConfigStorageReg
-}
+};

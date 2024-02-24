@@ -3,14 +3,24 @@ import ServerEvents from "../ServerEvents";
 import { ConsoleColor } from "../Models/ConsoleColors";
 import ConsoleColorManager from "./ConsoleColorManager";
 
+declare type TConsoleData = string|number|boolean|undefined|null|{
+    data: unknown;
+    id?: number;
+    message?: string;
+    player?: {
+        guid: string;
+        id: number;
+    };
+};
+
 class Console {
     public autoscroll: boolean = true;
     private static instance: Console;
     private colors: ConsoleColor[] = [];
     public maxItems: number = 300;
 
-    public onChat: (message: string) => void = (message: string) => {};
-    public onCommand: (command: string) => void = (command: string) => {};
+    public onChat: (message: string) => void = () => {};
+    public onCommand: (command: string) => void = () => {};
 
     public constructor() {
         if (Console.instance) {
@@ -73,28 +83,28 @@ class Console {
         $('#console').empty();
     }
 
-    public error(message: string|object|number|boolean|undefined|null) {
+    public error(message: TConsoleData) {
         this.logEvent(ServerEvents.CHAT_ERROR, message);
     }
 
-    public warn(message: string|object|number|boolean|undefined|null) {
+    public warn(message: TConsoleData) {
         this.logEvent(ServerEvents.CHAT_ERROR, message);
     }
 
-    public debug(message: string|object|number|boolean|undefined|null) {
+    public debug(message: TConsoleData) {
         this.logEvent(ServerEvents.CHAT_DEBUG, message);
     }
 
-    public log(message: string|object|number|boolean|undefined|null) {
+    public log(message: TConsoleData) {
         this.logEvent(ServerEvents.MESSAGE, message);
     }
 
-    public logEvent(event: ServerEvents, data: any = null) {
-        if (typeof data === 'object' && data !== null) {
+    public logEvent(event: ServerEvents, data: TConsoleData) {
+        if (typeof data === 'object' && data !== null && data.data !== undefined)  {
             if (typeof data.data === 'object') {
                 data = 'OBJECT: ' + JSON.stringify(data.data);
             } else {
-                data = data.data;
+                data = data.data.toString();
             }
         }
 

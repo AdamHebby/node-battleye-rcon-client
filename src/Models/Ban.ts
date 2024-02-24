@@ -1,4 +1,12 @@
-class Ban {
+export declare type TBan = {
+    id: number;
+    ip: string | null;
+    guid: string | null;
+    minutesLeft: number;
+    reason: string;
+};
+
+class Ban implements TBan {
     public id: number;
     public ip: string|null = null;
     public guid: string|null = null;
@@ -22,11 +30,11 @@ class Ban {
         this.expiresAt.setMinutes(this.expiresAt.getMinutes() + minutesLeft);
     }
 
-    public static fromJson(json: any): Ban {
+    public static fromJson(json: TBan): Ban {
         return new Ban(json.id, json?.ip, json?.guid, json.minutesLeft, json.reason);
     }
 
-    public toJson(): any {
+    public toJson(): TBan {
         return {
             id: this.id,
             ip: this.ip,

@@ -4,7 +4,7 @@ import { open } from 'openurl';
 import { exec } from 'child_process';
 import { Request, Response } from 'express';
 import express from 'express';
-import session, { Session } from 'express-session';
+import session from 'express-session';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import { NartUser, Permissions } from './Models/NartUser';
@@ -13,15 +13,14 @@ import cookieParser from 'cookie-parser';
 import DatabaseManager from './Repository/DatabaseManager';
 import { NartSession } from './Models/Session';
 import { NartConfig } from './NartConfig';
-import winston, { createLogger } from 'winston';
-import { errorLogger, logger } from 'express-winston';
+import winston from 'winston';
 import { Logger } from './Logger';
 
 class WebRouter
 {
     public app: express.Application | undefined;
     private adminStartLink: string | null = null;
-    private logger: winston.Logger
+    private logger: winston.Logger;
 
     constructor() {
         this.logger = Logger.normalLogger('nart.log');
@@ -77,9 +76,11 @@ class WebRouter
         app.use(cookieParser());
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
-        app.use(multer().any())
+        app.use(multer().any());
 
-        const SqliteStore = require("better-sqlite3-session-store")(session)
+        // TODO: Fix this
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const SqliteStore = require("better-sqlite3-session-store")(session);
         let sessionStore = new SqliteStore({
             client: DatabaseManager.main(),
             expired: {
@@ -89,7 +90,7 @@ class WebRouter
         });
 
         // setup express sessions
-        app.set('trust proxy', 1) // trust first proxy
+        app.set('trust proxy', 1); // trust first proxy
         app.use(session({
             secret: config.auth.sessionSecret,
             resave: false,
@@ -98,7 +99,7 @@ class WebRouter
             store: sessionStore,
         }));
 
-        app.use(this.authMiddleware)
+        app.use(this.authMiddleware);
 
         app.use(Logger.winstonHttpErrorLogger());
         app.use(Logger.winstonHttpLogger());
@@ -109,7 +110,7 @@ class WebRouter
         this.app = app;
     }
 
-    private authMiddleware(req: Request, res: Response, next: any): void
+    private authMiddleware(req: Request, res: Response, next: () => void): void
     {
         let session = req.session as NartSession;
 
@@ -133,7 +134,7 @@ class WebRouter
 
     public onIndex(req: Request, res: Response): void
     {
-        if (this.checkAuth(req, res) === false) {
+        if (this.checkAuth(req) !== true) {
             res.redirect('/login');
             return;
         }
@@ -148,7 +149,7 @@ class WebRouter
 
         if (username === null || password === null) {
             res.status(400);
-            this.loadHtml(res, 'login')
+            this.loadHtml(res, 'login');
             return;
         }
 
@@ -156,7 +157,7 @@ class WebRouter
 
         if (user === null) {
             res.status(401);
-            this.loadHtml(res, 'login')
+            this.loadHtml(res, 'login');
             return;
         }
 
@@ -175,7 +176,7 @@ class WebRouter
 
     public onLoginGet(req: Request, res: Response): void
     {
-        if (this.checkAuth(req, res)) {
+        if (this.checkAuth(req) === true) {
             res.redirect('/');
             return;
         }
@@ -226,24 +227,30 @@ class WebRouter
         res.redirect('/');
     }
 
-    public onError(err: any, req: Request, res: Response, next: any): void
+    public onError(err: string, req: Request, res: Response, next: () => void): void
     {
         next();
     }
 
-    public onAny(req: Request, res: Response, next: any): void
+    public onAny(req: Request, res: Response, next: () => void): void
     {
         if (next) {
             next();
         }
     }
 
-    private checkAuth(req: Request, res: Response): boolean
+    private checkAuth(req: Request): boolean
     {
         let session = req.session as NartSession;
-        return session.isLoggedIn &&
+
+        return session.isLoggedIn === true &&
             session.userId !== null &&
-            session.userId !== undefined;
+            session.userId !== undefined &&
+            session.socketToken !== null &&
+            session.socketToken !== undefined &&
+            req.cookies.hasOwnProperty(NartConfig.config().auth.jwt.name) &&
+            session.socketToken === req.cookies[NartConfig.config().auth.jwt.name] &&
+            session.cookie !== undefined;
     }
 
     public onResource(req: Request, res: Response): void

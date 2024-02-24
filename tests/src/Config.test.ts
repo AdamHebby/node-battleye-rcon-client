@@ -7,9 +7,8 @@ describe('Test NartConfig', () => {
     });
 
     test('NartConfig.schema() returns the schema', () => {
-        let schema = NartConfig.schema();
+        let schema = NartConfig.schema() as { properties: TNartConfig };
         expect(schema).toBeDefined();
-        expect(schema.properties).toBeDefined();
         expect(schema.properties.auth).toBeDefined();
         expect(schema.properties.storage).toBeDefined();
         expect(schema.properties.logging).toBeDefined();

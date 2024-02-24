@@ -19,6 +19,7 @@ interface MessageSocketResponse {
     id?: string | null;
     type: ServerEvents;
     data: any;
+
 }
 
 abstract class AbstractMessageHandler implements MessageHandler {

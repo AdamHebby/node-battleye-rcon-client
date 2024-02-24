@@ -1,4 +1,4 @@
-import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
+import { Message } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 
 class NullHandler extends BattleyeMessageHandler {
@@ -6,7 +6,7 @@ class NullHandler extends BattleyeMessageHandler {
         super();
     }
 
-    public handle(message: Message): null {
+    public handle(_: Message): null {
         return null;
     }
 

@@ -1,12 +1,12 @@
-import BootstrapUtils from "./BootstrapUtils";
+import BootstrapUtils, { TModalData } from "./BootstrapUtils";
 import ContextMenu from "./ContextMenu";
 import $ from "jquery";
-import Name from "./Data/Name";
 import IpAddress from "./Data/IpAddress";
 import GUID from "./Data/GUID";
 
 interface BanRemoveContextMenuCallbackData {
-    id: number
+    id: number,
+    reason: string
 }
 
 interface BanRemoveContextMenuCallback {
@@ -22,10 +22,10 @@ class BanRemoveContextMenu {
         `).hide().appendTo('body');
     }
 
-    public static addMenu(record: JQuery<Element>, callback: BanRemoveContextMenuCallback|undefined = undefined) {
+    public static addMenu(record: JQuery<HTMLElement>, callback: BanRemoveContextMenuCallback|undefined = undefined) {
         ContextMenu.menu(record, {
             menuSelector: '#player-ban-context-menu',
-            menuSelected: function (invokedOn: JQuery<Element>, selectedMenu: JQuery<Element>) {
+            menuSelected: function (invokedOn: JQuery<HTMLElement>, selectedMenu: JQuery<HTMLElement>) {
                 invokedOn = invokedOn.closest(`[data-id]`);
 
                 if (invokedOn.length === 0) {
@@ -37,7 +37,7 @@ class BanRemoveContextMenu {
         });
     }
 
-    public static trigger(record: JQuery<Element>, selectedMenu: JQuery<Element>, callback: BanRemoveContextMenuCallback|undefined = undefined) {
+    public static trigger(record: JQuery<HTMLElement>, selectedMenu: JQuery<HTMLElement>, callback: BanRemoveContextMenuCallback|undefined = undefined) {
         let action   = selectedMenu.data('action');
         let id       = record.data('id');
         let guid     = record.data(GUID.key);
@@ -51,14 +51,15 @@ class BanRemoveContextMenu {
         if (action === 'remove_ban' && id !== '') {
             let form = $('<form>');
 
-            BootstrapUtils.formModal(`Kick ${name}`, `Are you sure you want to remove the ban on ${bannedOn}?`, form, function (data: any) {
-                if (data.reason === undefined) {
+            BootstrapUtils.formModal(`Kick ${name}`, `Are you sure you want to remove the ban on ${bannedOn}?`, form, function (data: TModalData) {
+                if (data.reason === undefined || data.reason === '' || data.reason === null) {
                     return;
                 }
 
                 if (callback) {
                     callback(action, {
-                        id: id
+                        id: id,
+                        reason: data.reason as string
                     });
                     return;
                 }

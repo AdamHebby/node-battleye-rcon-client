@@ -20,7 +20,7 @@ describe("GlobalChatHandler", () => {
             type: ServerEvents.CHAT_GLOBAL_MESSAGE,
             data: {
                 message: "(Global) Survivor: Hello, world!",
-                player: undefined
+                player: null
             }
         });
     });

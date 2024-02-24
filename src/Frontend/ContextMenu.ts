@@ -1,7 +1,21 @@
 import $ from 'jquery';
 
+declare type MenuSelected = (
+    invokedOn: JQuery<HTMLElement>,
+    selectedMenu: JQuery<HTMLElement>
+) => void;
+
+declare type BeforeShow = (e: JQuery.ContextMenuEvent) => void;
+
 class ContextMenu {
-    public static menu(jq: JQuery<{}>, settings: {menuSelector: string, beforeShow?: Function, menuSelected: Function}) {
+    public static menu(
+        jq: JQuery<HTMLElement>,
+        settings: {
+            menuSelector: string,
+            beforeShow?: BeforeShow,
+            menuSelected: MenuSelected
+        }
+    ) {
         $(jq).each(function () {
             // Open context menu
             $(this).on("contextmenu", function (e: JQuery.ContextMenuEvent) {
@@ -13,7 +27,7 @@ class ContextMenu {
                 }
 
                 //open menu
-                var $menu = $(settings.menuSelector)
+                let $menu = $(settings.menuSelector)
                     .data("invokedOn", $(e.target))
                     .show()
                     .css({
@@ -26,8 +40,8 @@ class ContextMenu {
                         e.preventDefault();
                         $menu.hide();
 
-                        var $invokedOn = $menu.data("invokedOn");
-                        var $selectedMenu = $(e.target);
+                        let $invokedOn = $menu.data("invokedOn");
+                        let $selectedMenu = $(e.target);
 
                         settings.menuSelected.call(this, $invokedOn, $selectedMenu);
                     });
@@ -43,11 +57,11 @@ class ContextMenu {
     }
 
     private static getMenuPosition(menuSelector: string, mouse: number, direction: string, scrollDir: string) {
-        // @ts-ignore
-        var win = $(window)[direction](),
-            // @ts-ignore
+        // @ts-ignore - jQuery types are wrong
+        let win = $(window)[direction](),
+            // @ts-ignore - jQuery types are wrong
             scroll = $(window)[scrollDir](),
-            // @ts-ignore
+            // @ts-ignore - jQuery types are wrong
             menu = $(menuSelector)[direction](),
             position = mouse + scroll;
 
@@ -60,8 +74,12 @@ class ContextMenu {
 }
 
 $.fn.extend({
-    contextMenu: function (settings: {menuSelector: string, menuSelected: Function}) {
-        ContextMenu.menu($(this), settings);
+    contextMenu: function (settings: {
+        menuSelector: string,
+        menuSelected: MenuSelected,
+        beforeShow?: BeforeShow
+    }) {
+        ContextMenu.menu($(this) as JQuery<HTMLElement>, settings);
     }
 });
 

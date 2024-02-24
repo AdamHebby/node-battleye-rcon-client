@@ -1,15 +1,14 @@
 import PlayerData from './PlayerData';
-import $ from 'jquery';
 
 class Comment extends PlayerData
 {
     public static key: string = 'player-comment';
     public key: string = Comment.key;
 
-    public constructor(data: string)
+    public constructor(data: null|string)
     {
         super();
-        this.data = data;
+        this.data = data ?? '';
     }
 }
 

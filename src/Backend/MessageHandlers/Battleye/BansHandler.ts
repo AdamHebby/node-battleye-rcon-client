@@ -1,4 +1,4 @@
-import Ban from "../../../Models/Ban";
+import Ban, { TBan } from "../../../Models/Ban";
 import ServerEvents from "../../../ServerEvents";
 import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
@@ -16,16 +16,16 @@ class BansHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.startsWith('GUID Bans:')
+        return message.content.startsWith('GUID Bans:');
     }
 
-    private static parseBanData(message: string): Ban[] {
-        let bans: Ban[] = [];
+    private static parseBanData(message: string): TBan[] {
+        let bans: TBan[] = [];
         let banData = message.trim()
             .replace('GUID Bans:', '')
             .replace('IP Bans:', '')
-            .replace(/\[\#\].*/g, '')
-            .replace(/\-{2,}/g, '')
+            .replace(/\[#\].*/g, '')
+            .replace(/-{2,}/g, '')
             .replace(/\n+/, '\n')
             .trim()
             .split('\n');

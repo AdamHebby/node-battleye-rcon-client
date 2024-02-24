@@ -14,15 +14,21 @@ class GlobalChatHandler extends BattleyeMessageHandler {
     }
 
     public handle(message: Message): MessageSocketResponse {
-        let m = message.content.match(/^\(Global\) (.*?)\: (.*)$/) || [];
+        let m = message.content.match(/^\(Global\) (.*?): (.*)$/) || [];
         let username = m[1];
-        let player = this.cacheRepo.get('players')?.find((p: any) => p.name === username);
+
+        let playersCache = this.cacheRepo.get('players');
+        let player: Player|null = null;
+
+        if (playersCache !== null && playersCache !== undefined && Array.isArray(playersCache) && playersCache.length > 0) {
+            player = playersCache.find((p: Player) => p.name === username);
+        }
 
         return {
             type: ServerEvents.CHAT_GLOBAL_MESSAGE,
             data: {
                 message: message.content,
-                player: player
+                player: player !== undefined ? player : null
             }
         };
     }

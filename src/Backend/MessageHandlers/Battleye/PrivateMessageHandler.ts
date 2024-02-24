@@ -14,8 +14,13 @@ class PrivateMessageHandler extends BattleyeMessageHandler {
     }
 
     public handle(message: Message): MessageSocketResponse {
-        let m = message.content.match(/^RCon admin \#\d+: \(To (.*?)\) (.*?)$/) || [];
-        let player = this.cacheRepo.get('players')?.find((p: Player) => p.name === m[1]);
+        let m = message.content.match(/^RCon admin #\d+: \(To (.*?)\) (.*?)$/) || [];
+        let playersCache = this.cacheRepo.get('players');
+        let player: Player|null = null;
+
+        if (playersCache !== null && playersCache !== undefined && Array.isArray(playersCache) && playersCache.length > 0) {
+            player = playersCache.find((p: Player) => p.name === m[1]);
+        }
 
         return {
             type: ServerEvents.CHAT_PRIVATE_MESSAGE,
@@ -27,7 +32,7 @@ class PrivateMessageHandler extends BattleyeMessageHandler {
     }
 
     public canHandle(message: Message): boolean {
-        return message.content.match(/^RCon admin \#\d+: \(To (.*?)\) (.*?)$/) !== null;
+        return message.content.match(/^RCon admin #\d+: \(To (.*?)\) (.*?)$/) !== null;
     }
 }
 

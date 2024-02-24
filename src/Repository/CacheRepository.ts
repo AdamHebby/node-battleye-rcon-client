@@ -1,27 +1,27 @@
 export interface ICacheRepository {
-    set(key: string, value: any): void;
-    get(key: string): any;
+    set(key: string, value: unknown): void;
+    get(key: string): unknown;
     delete(key: string): void;
     clear(): void;
     has(key: string): boolean;
     keys(): string[];
-    values(): any[];
+    values(): unknown[];
     size(): number;
 }
 
 class CacheRepository implements ICacheRepository
 {
-    private cache: { [key: string]: any };
+    private cache: { [key: string]: unknown };
 
     constructor() {
         this.cache = {};
     }
 
-    public set(key: string, value: any): void {
+    public set(key: string, value: unknown): void {
         this.cache[key] = value;
     }
 
-    public get(key: string): any {
+    public get(key: string): unknown {
         return this.cache[key];
     }
 
@@ -41,7 +41,7 @@ class CacheRepository implements ICacheRepository
         return Object.keys(this.cache);
     }
 
-    public values(): any[] {
+    public values(): unknown[] {
         return Object.values(this.cache);
     }
 

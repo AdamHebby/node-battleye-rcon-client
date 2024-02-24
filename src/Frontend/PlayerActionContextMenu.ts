@@ -1,4 +1,4 @@
-import BootstrapUtils from "./BootstrapUtils";
+import BootstrapUtils, { TModalData } from "./BootstrapUtils";
 import ContextMenu from "./ContextMenu";
 import $ from "jquery";
 import Name from "./Data/Name";
@@ -46,7 +46,7 @@ class PlayerActionContextMenu {
         `).hide().appendTo('body');
     }
 
-    public static addMenu(record: JQuery<Element>, callback: PlayerActionContextMenuCallback|undefined = undefined) {
+    public static addMenu(record: JQuery<HTMLElement>, callback: PlayerActionContextMenuCallback|undefined = undefined) {
         ContextMenu.menu(record, {
             menuSelector: '#players-db-context-menu',
             beforeShow: function (e: JQuery.ContextMenuEvent) {
@@ -55,7 +55,7 @@ class PlayerActionContextMenu {
                 $('#players-db-context-menu [data-action=kick]').toggleClass('text-warning', !disableOnlineButtons);
                 $('#players-db-context-menu [data-action=kick]').toggleClass('disabled', disableOnlineButtons);
             },
-            menuSelected: function (invokedOn: JQuery<Element>, selectedMenu: JQuery<Element>) {
+            menuSelected: function (invokedOn: JQuery<HTMLElement>, selectedMenu: JQuery<HTMLElement>) {
                 invokedOn = invokedOn.closest(`[data-${GUID.key}]`);
 
                 if (invokedOn.length === 0) {
@@ -67,7 +67,7 @@ class PlayerActionContextMenu {
         });
     }
 
-    public static trigger(record: JQuery<Element>, selectedMenu: JQuery<Element>, callback: PlayerActionContextMenuCallback|undefined = undefined) {
+    public static trigger(record: JQuery<HTMLElement>, selectedMenu: JQuery<HTMLElement>, callback: PlayerActionContextMenuCallback|undefined = undefined) {
         let action = selectedMenu.data('action');
         let dbId   = record.data('db-id');
         let gameId = record.data('game-id');
@@ -82,7 +82,7 @@ class PlayerActionContextMenu {
         if (action === 'message' && dbId !== '') {
             let form = $('<form>').append($('<textarea class="w-100" rows="5">').attr('name', 'message').val(''));
 
-            BootstrapUtils.formModal(`Send Message to ${name}`, 'Input Message:', form, function (data: any) {
+            BootstrapUtils.formModal(`Send Message to ${name}`, 'Input Message:', form, function (data: TModalData ) {
                 if (data.message === undefined) {
                     return;
                 }
@@ -105,7 +105,7 @@ class PlayerActionContextMenu {
         if (action === 'set_comment') {
             let form = $('<form>').append($('<textarea class="w-100" rows="5">').attr('name', 'comment').val(''));
 
-            BootstrapUtils.formModal('Set Comment', 'Enter a comment:', form, function (data: any) {
+            BootstrapUtils.formModal('Set Comment', 'Enter a comment:', form, function (data: TModalData) {
                 if (data.comment === undefined) {
                     return;
                 }
@@ -128,7 +128,7 @@ class PlayerActionContextMenu {
         if (action === 'set_nickname') {
             let form = $('<form>').append(BootstrapUtils.formTextGroup('nickname', 'Nickname', ''));
 
-            BootstrapUtils.formModal('Set Nickname', 'Enter new Nickname:', form, function (data: any) {
+            BootstrapUtils.formModal('Set Nickname', 'Enter new Nickname:', form, function (data: TModalData) {
                 if (data.nickname === undefined) {
                     return;
                 }
@@ -171,7 +171,7 @@ class PlayerActionContextMenu {
         if (action === 'kick') {
             let form = $('<form>').append(BootstrapUtils.formTextGroup('reason', 'Reason:', ''));
 
-            BootstrapUtils.formModal(`Kick ${name}`, `Are you sure you want to kick ${name} (${guid}) at ${ip}?`, form, function (data: any) {
+            BootstrapUtils.formModal(`Kick ${name}`, `Are you sure you want to kick ${name} (${guid}) at ${ip}?`, form, function (data: TModalData) {
                 if (data.reason === undefined) {
                     return;
                 }
@@ -196,7 +196,7 @@ class PlayerActionContextMenu {
                 .append(BootstrapUtils.formTextGroup('reason', 'Reason:', 'Banned by Admin'))
                 .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
 
-            BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID and IP address?`, form, function (data: any) {
+            BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID and IP address?`, form, function (data: TModalData) {
                 if (data.reason === undefined || data.duration === undefined) {
                     return;
                 }
@@ -223,7 +223,7 @@ class PlayerActionContextMenu {
                 .append(BootstrapUtils.formTextGroup('reason', 'Reason:', 'Banned by Admin'))
                 .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
 
-            BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their IP address?`, form, function (data: any) {
+            BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their IP address?`, form, function (data: TModalData) {
                 if (data.reason === undefined || data.duration === undefined) {
                     return;
                 }
@@ -249,7 +249,7 @@ class PlayerActionContextMenu {
                 .append(BootstrapUtils.formTextGroup('reason', 'Reason:', 'Banned by Admin'))
                 .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
 
-            BootstrapUtils.formModal(`Ban ${guid}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID?`, form, function (data: any) {
+            BootstrapUtils.formModal(`Ban ${guid}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID?`, form, function (data: TModalData) {
                 if (data.reason === undefined || data.duration === undefined) {
                     return;
                 }

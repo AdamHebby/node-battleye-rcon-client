@@ -1,5 +1,5 @@
 import ServerEvents from "../../../ServerEvents";
-import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
+import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class PlayerUnbanHandler extends WebSocketMessageHandler {
@@ -8,7 +8,7 @@ class PlayerUnbanHandler extends WebSocketMessageHandler {
     }
 
     public handle(message: InboundSocketMessage): void {
-
+        console.debug(message);
     }
 
     public canHandle(message: InboundSocketMessage): boolean {

@@ -1,8 +1,13 @@
 import { Modal } from "bootstrap";
 import $ from "jquery";
 
+export declare type TModalValue = string|number|boolean|undefined|null;
+export declare type TModalData = {
+    [key: string]: TModalValue
+}
+
 class BootstrapUtils {
-    public static formModal(title: string, message: string, form: JQuery<HTMLElement>, cb: Function) {
+    public static formModal(title: string, message: string, form: JQuery<HTMLElement>, cb: (data: TModalData) => void) {
         let modal        = $('#modal-input-form');
         let modalTitle   = modal.find('.modal-title');
         let modalText    = modal.find('.modal-text');
@@ -16,9 +21,9 @@ class BootstrapUtils {
         let m = Modal.getOrCreateInstance('#modal-input-form');
 
         modalConfirm.one('click', function () {
-            let data: any = {};
+            let data: TModalData = {};
 
-            form.serializeArray().map((i: any) => {
+            form.serializeArray().map((i: {name: string, value: TModalValue}) => {
                 data[i.name] = i.value;
             });
 

@@ -1,5 +1,5 @@
 import ServerEvents from "../../../ServerEvents";
-import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
+import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class PlayerDeleteHandler extends WebSocketMessageHandler {
@@ -8,12 +8,11 @@ class PlayerDeleteHandler extends WebSocketMessageHandler {
     }
 
     public handle(message: InboundSocketMessage): void {
-
+        console.debug(message);
     }
 
     public canHandle(message: InboundSocketMessage): boolean {
-        return false;
-        // return message.type === ServerEvents.PLAYER_BAN;
+        return message.type === ServerEvents.PLAYER_DELETE;
     }
 }
 

@@ -18,7 +18,7 @@ describe("PrivateMessageHandler", () => {
             type: ServerEvents.CHAT_PRIVATE_MESSAGE,
             data: {
                 message: "RCon admin #0: (To Survivor Nart) Message goes here",
-                player: undefined
+                player: null
             }
         });
     });

@@ -1,5 +1,5 @@
 import AbstractRepository from "./AbstractRepository";
-import Server from '../Models/Server';
+import Server, { TServer } from '../Models/Server';
 import { NartUser } from "../Models/NartUser";
 import DatabaseManager from "./DatabaseManager";
 
@@ -28,9 +28,8 @@ class ServerRepository extends AbstractRepository implements IServerRepository
         stmt.run(serverId, server.name, server.address, server.port, server.password, server.lastConnected?.toLocaleString());
 
         if (serverId === null) {
-            let row = db.prepare('SELECT last_insert_rowid() as id').pluck().get();
+            let row = db.prepare('SELECT last_insert_rowid() as id').pluck().get() as {id: number};
 
-            // @ts-ignore
             server.id = row.id;
         }
 
@@ -40,10 +39,10 @@ class ServerRepository extends AbstractRepository implements IServerRepository
     public all(): Server[] {
         let db = this.getConnection();
 
-        let data = db.prepare('SELECT * FROM servers').all();
+        let data = db.prepare('SELECT * FROM servers').all() as TServer[]|[];
 
         let servers: Server[] = [];
-        data.forEach(function (row: any) {
+        data.forEach(function (row: TServer) {
             servers.push(Server.fromJson(row));
         });
 
@@ -52,15 +51,7 @@ class ServerRepository extends AbstractRepository implements IServerRepository
 
     public find(id: number): Server|null {
         let db = this.getConnection();
-        // @ts-ignore
-        let row: {
-            id: number,
-            name: string,
-            address: string,
-            port: number,
-            password: string,
-            lastConnected: string
-        }|null = db.prepare('SELECT * FROM servers WHERE id = ?').get(id);
+        let row = db.prepare('SELECT * FROM servers WHERE id = ?').get(id) as TServer;
 
         if (row === null) return null;
 

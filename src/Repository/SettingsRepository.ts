@@ -3,6 +3,8 @@ import Settings from '../Models/Settings';
 import { NartUser } from "../Models/NartUser";
 import DatabaseManager from "./DatabaseManager";
 
+declare type TScalar = string|number|boolean|null;
+
 export interface ISettingsRepository {
     upsert(settings: Settings): Settings;
     get(): Settings;
@@ -34,13 +36,14 @@ class SettingsRepository extends AbstractRepository
         let db = this.getConnection();
 
         let stmt = db.prepare('SELECT * FROM settings');
-        let settings: [{key: string, value: any}] = stmt.all() as any;
+        let settings: {key: string, value: TScalar}[] = stmt.all() as {key: string, value: TScalar}[]|[];
 
 
         let settingsObject = new Settings();
 
         for (let i = 0; i < settings.length; i++) {
-            let val = typeof(settings[i].value) === 'number' ? parseInt(settings[i].value) : settings[i].value;
+            let x = settings[i].value;
+            let val = typeof(x) === 'string' ? parseInt(x) : settings[i].value;
 
             settingsObject.set(settings[i].key, val);
         }

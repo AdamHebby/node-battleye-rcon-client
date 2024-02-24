@@ -41,6 +41,8 @@ enum ServerEvents {
 
     SET_COMMENT = 'set_comment',
     SET_NICKNAME = 'set_nickname',
+
+    PLAYER_DELETE = 'player_delete',
 }
 
 export default ServerEvents;

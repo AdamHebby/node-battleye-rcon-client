@@ -76,7 +76,7 @@ class DynamicTable
             let value = $(element).attr(`data-${definedBy}`);
 
             if (value !== undefined && !definedValues.includes(value)) {
-                $(element).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement, index: number, element: HTMLElement) {
+                $(element).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement) {
                     let popover = Popover.getInstance(this);
                     popover?.hide();
                     popover?.disable();
@@ -93,4 +93,4 @@ class DynamicTable
     }
 }
 
-export { DynamicTable, DynamicTableSearcher }
+export { DynamicTable, DynamicTableSearcher };

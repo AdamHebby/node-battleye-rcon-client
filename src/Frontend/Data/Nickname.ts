@@ -1,16 +1,15 @@
 import PlayerData from './PlayerData';
 import $ from 'jquery';
-import { Popover } from 'bootstrap';
 
 class Nickname extends PlayerData
 {
     public static key: string = 'player-nickname';
     public key: string = Nickname.key;
 
-    public constructor(data: string, public previous: string[] = [])
+    public constructor(data: string|null, public previous: string[] = [])
     {
         super();
-        this.data = data;
+        this.data = data ?? '';
     }
 
     public jQuery(): JQuery<HTMLElement> {

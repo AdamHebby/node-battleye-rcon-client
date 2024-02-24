@@ -1,6 +1,16 @@
 import PlayerRecord from "./PlayerRecord";
 
-class Player {
+declare type TPlayer = {
+    id: number|null,
+    dbId: number|null,
+    ip: string,
+    ping: number|null,
+    guid: string,
+    name: string,
+    status: string|null
+}
+
+class Player implements TPlayer {
     public id: number|null = null;
     public dbId: number|null = null;
     public ip: string;
@@ -11,7 +21,7 @@ class Player {
 
     public record: PlayerRecord|null = null;
 
-    constructor(data: any) {
+    constructor(data: TPlayer) {
         this.id = data.id;
         this.dbId = data.dbId;
         this.ip = data.ip;
@@ -21,7 +31,7 @@ class Player {
         this.status = data.status;
     }
 
-    public static fromJson(data: any): Player {
+    public static fromJson(data: TPlayer): Player {
         return new Player(data);
     }
 
@@ -32,7 +42,7 @@ class Player {
         playerRecord.lastIp = this.ip;
     }
 
-    public toJson(): any {
+    public toJson(): TPlayer {
         return {
             id: this.id,
             dbId: this.dbId,

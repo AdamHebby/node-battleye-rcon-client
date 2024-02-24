@@ -1,5 +1,5 @@
-import fs, { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import Database, { Database as DB, SqliteError } from "better-sqlite3-multiple-ciphers";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import Database, { Database as DB } from "better-sqlite3-multiple-ciphers";
 import Registry from "winreg";
 import { NartConfig } from "../NartConfig";
 import { Logger } from "../Logger";
@@ -42,8 +42,8 @@ class DatabaseManager
             } else if (type === DatabaseType.USERS || (type === null && name.startsWith('users/'))) {
                 this.userSchema(db);
             }
-        } catch (error: any) {
-            if (error?.code === 'SQLITE_NOTADB') {
+        } catch (error: unknown) {
+            if (error instanceof Database.SqliteError && error?.code === 'SQLITE_NOTADB') {
                 Logger.normalLogger().error(`Database at ${path} is not a valid database or is encrypted with a different key`);
                 process.exit(1);
             }
@@ -85,7 +85,7 @@ class DatabaseManager
                 regKey.create(() => {});
 
                 regKey.set('db_key', 'REG_SZ', password, (e) => {
-                    Logger.normalLogger().error(e);
+                    Logger.normalLogger().error(`Could not write to registry: ${e}`);
                 });
 
                 return;
@@ -95,7 +95,7 @@ class DatabaseManager
                 throw new Error('Could not determine where to store the password');
             }
 
-            Logger.normalLogger().debug(`Writing password to ${storage.dbKey.path}`)
+            Logger.normalLogger().debug(`Writing password to ${storage.dbKey.path}`);
             writeFileSync(storage.dbKey.path, password);
         } catch (error) {
             // TODO: Should we throw an error here rather than falling back?
@@ -103,7 +103,7 @@ class DatabaseManager
                 throw new Error('Could not determine where to store the password');
             }
 
-            Logger.normalLogger().debug(`Writing password to ${storage.dbKey.path}`)
+            Logger.normalLogger().debug(`Writing password to ${storage.dbKey.path}`);
             writeFileSync(storage.dbKey.path, password);
         }
     }

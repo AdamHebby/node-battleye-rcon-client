@@ -1,6 +1,6 @@
 import winston, { createLogger } from 'winston';
 import { LoggerOptions, errorLogger, logger } from 'express-winston';
-import { ErrorRequestHandler, Handler } from 'express';
+import { ErrorRequestHandler, Handler, Request, Response } from 'express';
 import { NartConfig } from './NartConfig';
 
 class Logger
@@ -61,7 +61,7 @@ class Logger
             colorize: false,
             level: NartConfig.config().logging.level,
             meta: true,
-            ignoreRoute: (req: any, res: any): boolean => {
+            ignoreRoute: (req: Request, _: Response): boolean => {
                 return req.url.startsWith('/resources') === true;
             }
         };

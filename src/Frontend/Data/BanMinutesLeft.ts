@@ -1,6 +1,5 @@
 import PlayerData from './PlayerData';
 import $ from 'jquery';
-import { Popover } from 'bootstrap';
 
 class BanMinutesLeft extends PlayerData
 {

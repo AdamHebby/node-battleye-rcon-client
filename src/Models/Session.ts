@@ -13,4 +13,4 @@ interface NartSession extends Session {
     socketToken: string;
 }
 
-export { NartSession, SessionRecord }
+export { NartSession, SessionRecord };

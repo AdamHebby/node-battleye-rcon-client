@@ -10,7 +10,7 @@
     "build:client": "npx webpack",
     "build": "npm run build:bin && npm run build:server && npm run build:client",
     "start": "node build/run_server.js",
-    "generate:config": "node build/bin/generate_config.js",
+    "generate:config": "node build/bin/generate-config.js",
     "postinstall": "npm run build && npm run generate:config"
   },
   "author": "",
@@ -68,8 +68,12 @@
     "@types/prompt-sync": "^4.2.3",
     "@types/winreg": "^1.2.36",
     "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "eslint": "^8.56.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.2",
+    "typescript-eslint": "^7.0.2"
   }
 }

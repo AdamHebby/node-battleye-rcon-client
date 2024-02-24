@@ -1,4 +1,4 @@
-import { hashSync } from "bcrypt";
+import { INartRepositoryUser } from "../Repository/NartRepository";
 
 enum Permissions {
     NONE = 0,
@@ -14,8 +14,8 @@ class NartUser {
         public permissions: Permissions = Permissions.USER,
         public hasLoggedIn: boolean = false,
         public dbKey: string = '',
-        public created_at: Date = new Date(),
-        public last_login: Date|null = null,
+        public createdAt: Date = new Date(),
+        public lastLogin: Date|null = null,
     ) {
     }
 
@@ -23,7 +23,7 @@ class NartUser {
         return this.username.trim().replace(' ', '_').toLowerCase();
     }
 
-    public static fromJson(json: any): NartUser {
+    public static fromJson(json: INartRepositoryUser): NartUser {
         return new NartUser(
             json.id,
             json.username,

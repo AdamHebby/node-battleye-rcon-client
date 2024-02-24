@@ -1,6 +1,6 @@
 import ServerEvents from "../../../ServerEvents";
 import { RconSender } from "../../Sender";
-import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
+import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class CustomCommandHandler extends WebSocketMessageHandler {

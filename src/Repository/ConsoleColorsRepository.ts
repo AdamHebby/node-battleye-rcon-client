@@ -2,6 +2,7 @@ import AbstractRepository from "./AbstractRepository";
 import {ConsoleColor} from "../Models/ConsoleColors";
 import DatabaseManager from "./DatabaseManager";
 import { NartUser } from "../Models/NartUser";
+import ServerEvents from "../ServerEvents";
 
 export interface IConsoleColorsRepository {
     upsert(colors: ConsoleColor[]): ConsoleColor[];
@@ -37,7 +38,11 @@ class ConsoleColorsRepository extends AbstractRepository implements IConsoleColo
         let db = this.getConnection();
 
         let stmt = db.prepare('SELECT * FROM console_colors');
-        let colors: ConsoleColor[] = stmt.all() as any;
+        let colors = stmt.all() as {
+            event: ServerEvents,
+            color: string,
+            enabled: number
+        }[];
 
         let colorsObject = [] as ConsoleColor[];
 

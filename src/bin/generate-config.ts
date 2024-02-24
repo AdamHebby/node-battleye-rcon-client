@@ -8,7 +8,6 @@ if (existsSync(__dirname + '/../../config.json')) {
 let schema = NartConfig.schema();
 let defaultConfig = NartConfig.default();
 
-// @ts-ignore
 defaultConfig['$schema'] = './config.schema.json';
 
 writeFileSync(__dirname + '/../../config.json', JSON.stringify(defaultConfig, undefined, 4));
