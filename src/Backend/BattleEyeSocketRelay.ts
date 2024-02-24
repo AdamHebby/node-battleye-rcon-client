@@ -1,13 +1,13 @@
 import websocket from 'ws';
 import BattleEyeClient from 'battle-eye-client';
-import ServerRepository from "../Repository/ServerRepository";
+import ServerRepository, { IServerRepository } from "../Repository/ServerRepository";
 import Server from '../Models/Server';
 import ServerEvents from "../ServerEvents";
-import SettingsRepository from '../Repository/SettingsRepository';
+import SettingsRepository, { ISettingsRepository } from '../Repository/SettingsRepository';
 import Settings from '../Models/Settings';
 import VariableTimer from '../VariableTimer';
 import PlayersRepository, { IPlayersRepository } from '../Repository/PlayersRepository';
-import CacheRepository from '../Repository/CacheRepository';
+import CacheRepository, { ICacheRepository } from '../Repository/CacheRepository';
 import BattleyeMessageHandlerManager from '../Backend/MessageHandlers/Battleye/BattleyeMessageHandlerManager';
 import { SocketSender, RconSender } from '../Backend/Sender';
 import { MessageSocketResponse } from '../Backend/MessageHandlers/AbstractMessageHandler';
@@ -27,10 +27,10 @@ class BattleEyeSocketRelay {
     public rconSender: RconSender;
 
     public cachedAuth: Server | null = null;
-    public serverRepo: ServerRepository;
-    public settingsRepo: SettingsRepository;
+    public serverRepo: IServerRepository;
+    public settingsRepo: ISettingsRepository;
     public playersRepo: IPlayersRepository;
-    public cacheRepo: CacheRepository;
+    public cacheRepo: ICacheRepository;
     private settings: Settings;
     private playerTimer: VariableTimer;
     private banTimer: VariableTimer;

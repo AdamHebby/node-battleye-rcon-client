@@ -1,4 +1,4 @@
-import ConsoleColorsRepository from "../../../Repository/ConsoleColorsRepository";
+import ConsoleColorsRepository, { IConsoleColorsRepository } from "../../../Repository/ConsoleColorsRepository";
 import ServerEvents from "../../../ServerEvents";
 import { SocketSender } from "../../Sender";
 import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
@@ -6,7 +6,7 @@ import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class ColorsSaveHandler extends WebSocketMessageHandler {
     public constructor(
-        private colorRepository: ConsoleColorsRepository,
+        private colorRepository: IConsoleColorsRepository,
         private socketSender: SocketSender
     ) {
         super();

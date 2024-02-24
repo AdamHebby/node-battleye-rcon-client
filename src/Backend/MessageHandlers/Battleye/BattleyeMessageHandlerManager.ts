@@ -3,7 +3,7 @@ import { Message } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 import PlayerDisconnectHandler from './PlayerDisconnectHandler';
 import { IPlayersRepository } from '../../../Repository/PlayersRepository';
-import CacheRepository from '../../../Repository/CacheRepository';
+import { ICacheRepository } from '../../../Repository/CacheRepository';
 import PlayersHandler from './PlayersHandler';
 import AdminsHandler from './AdminsHandler';
 import BansHandler from './BansHandler';
@@ -57,7 +57,7 @@ class BattleyeMessageHandlerManager {
 
     public static factory(
         socket: websocket,
-        cacheRepo: CacheRepository,
+        cacheRepo: ICacheRepository,
         playerRepo: IPlayersRepository,
         serverIp: string
     ): BattleyeMessageHandlerManager {

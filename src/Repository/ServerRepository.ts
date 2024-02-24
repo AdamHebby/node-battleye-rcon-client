@@ -12,7 +12,7 @@ export interface IServerRepository {
 
 class ServerRepository extends AbstractRepository implements IServerRepository
 {
-    public static repo(user: NartUser): ServerRepository
+    public static repo(user: NartUser): IServerRepository
     {
         return new ServerRepository(
             DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)

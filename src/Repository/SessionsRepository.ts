@@ -8,7 +8,7 @@ export interface ISessionsRepository {
 
 class SessionsRepository extends AbstractRepository
 {
-    public static repo(): SessionsRepository
+    public static repo(): ISessionsRepository
     {
         return new SessionsRepository(DatabaseManager.main());
     }

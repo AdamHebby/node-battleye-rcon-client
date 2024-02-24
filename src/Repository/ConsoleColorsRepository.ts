@@ -10,7 +10,7 @@ export interface IConsoleColorsRepository {
 
 class ConsoleColorsRepository extends AbstractRepository implements IConsoleColorsRepository
 {
-    public static repo(user: NartUser): ConsoleColorsRepository
+    public static repo(user: NartUser): IConsoleColorsRepository
     {
         return new ConsoleColorsRepository(
             DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)

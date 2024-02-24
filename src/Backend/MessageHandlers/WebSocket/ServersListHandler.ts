@@ -1,4 +1,4 @@
-import ServerRepository from "../../../Repository/ServerRepository";
+import { IServerRepository } from "../../../Repository/ServerRepository";
 import ServerEvents from "../../../ServerEvents";
 import { SocketSender } from "../../Sender";
 import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
@@ -6,7 +6,7 @@ import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class ServersListHandler extends WebSocketMessageHandler {
     public constructor(
-        private serverRepository: ServerRepository,
+        private serverRepository: IServerRepository,
         private socketSender: SocketSender
     ) {
         super();

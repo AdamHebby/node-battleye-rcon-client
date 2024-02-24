@@ -1,5 +1,5 @@
 import Server from "../../../Models/Server";
-import ServerRepository from "../../../Repository/ServerRepository";
+import { IServerRepository } from "../../../Repository/ServerRepository";
 import ServerEvents from "../../../ServerEvents";
 import { SocketSender } from "../../Sender";
 import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
@@ -7,7 +7,7 @@ import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class ServersSaveHandler extends WebSocketMessageHandler {
     public constructor(
-        private serverRepo: ServerRepository,
+        private serverRepo: IServerRepository,
         private socketSender: SocketSender
     ) {
         super();

@@ -10,7 +10,7 @@ export interface ISettingsRepository {
 
 class SettingsRepository extends AbstractRepository
 {
-    public static repo(user: NartUser): SettingsRepository
+    public static repo(user: NartUser): ISettingsRepository
     {
         return new SettingsRepository(
             DatabaseManager.getConnection(`users/${user.usernameDbKey()}`, user.dbKey)

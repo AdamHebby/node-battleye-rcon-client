@@ -1,13 +1,13 @@
 import Player from "../../../Models/Player";
-import CacheRepository from "../../../Repository/CacheRepository";
+import { ICacheRepository } from "../../../Repository/CacheRepository";
 import ServerEvents from "../../../ServerEvents";
 import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 
 class PrivateMessageHandler extends BattleyeMessageHandler {
-    cacheRepo: CacheRepository;
+    cacheRepo: ICacheRepository;
     public constructor(
-        cacheRepo: CacheRepository
+        cacheRepo: ICacheRepository
     ) {
         super();
         this.cacheRepo = cacheRepo;

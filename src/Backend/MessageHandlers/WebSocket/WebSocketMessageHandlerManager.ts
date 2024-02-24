@@ -20,10 +20,10 @@ import SetCommentHandler from "./SetCommentHandler";
 import SetNicknameHandler from "./SetNicknameHandler";
 import SettingsListHandler from "./SettingsListHandler";
 import SettingsSaveHandler from "./SettingsSaveHandler";
-import ConsoleColorsRepository from "../../../Repository/ConsoleColorsRepository";
-import CacheRepository from "../../../Repository/CacheRepository";
-import ServerRepository from "../../../Repository/ServerRepository";
-import SettingsRepository from "../../../Repository/SettingsRepository";
+import { IConsoleColorsRepository } from "../../../Repository/ConsoleColorsRepository";
+import { ICacheRepository } from "../../../Repository/CacheRepository";
+import { IServerRepository } from "../../../Repository/ServerRepository";
+import { ISettingsRepository } from "../../../Repository/SettingsRepository";
 import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 
 class WebSocketMessageHandlerManager {
@@ -47,10 +47,10 @@ class WebSocketMessageHandlerManager {
     public static factory(
         socket: SocketSender,
         rcon: RconSender,
-        consoleColorRepository: ConsoleColorsRepository,
-        cacheRepository: CacheRepository,
-        serverRepository: ServerRepository,
-        settingsRepository: SettingsRepository,
+        consoleColorRepository: IConsoleColorsRepository,
+        cacheRepository: ICacheRepository,
+        serverRepository: IServerRepository,
+        settingsRepository: ISettingsRepository,
         playersRepository: IPlayersRepository,
     ): WebSocketMessageHandlerManager {
         let factory = new WebSocketMessageHandlerManager();

@@ -1,18 +1,18 @@
 import Player from "../../../Models/Player";
 import PlayerRecord from "../../../Models/PlayerRecord";
-import CacheRepository from "../../../Repository/CacheRepository";
+import { ICacheRepository } from "../../../Repository/CacheRepository";
 import { IPlayersRepository } from "../../../Repository/PlayersRepository";
 import ServerEvents from "../../../ServerEvents";
 import { Message, MessageSocketResponse } from "../AbstractMessageHandler";
 import BattleyeMessageHandler from "./BattleyeMessageHandler";
 
 class PlayersHandler extends BattleyeMessageHandler {
-    cacheRepo: CacheRepository;
+    cacheRepo: ICacheRepository;
     playersRepo: IPlayersRepository;
     serverIp: string;
 
     public constructor(
-        cacheRepo: CacheRepository,
+        cacheRepo: ICacheRepository,
         playersRepo: IPlayersRepository,
         serverIp: string
     ) {

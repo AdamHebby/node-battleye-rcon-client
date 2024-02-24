@@ -1,4 +1,4 @@
-import SettingsRepository from "../../../Repository/SettingsRepository";
+import { ISettingsRepository } from "../../../Repository/SettingsRepository";
 import ServerEvents from "../../../ServerEvents";
 import { SocketSender } from "../../Sender";
 import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
@@ -6,7 +6,7 @@ import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class SettingsListHandler extends WebSocketMessageHandler {
     public constructor(
-        private settingsRepo: SettingsRepository,
+        private settingsRepo: ISettingsRepository,
         private socketSender: SocketSender
     ) {
         super();
