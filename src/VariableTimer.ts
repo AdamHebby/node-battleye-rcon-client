@@ -2,28 +2,30 @@ class VariableTimer {
     public name: string;
     public time: number;
 
-    private _callback: () => void;
+    private callback: () => void;
     private timer: NodeJS.Timeout | null = null;
 
     constructor(name: string, callback: () => void, time: number) {
-        this._callback = callback;
+        this.callback = callback;
         this.time = time;
         this.name = name;
     }
 
     public start(time: number | null = null) {
-        let self = this;
+        this.time = time ?? this.time;
 
         if (this.timer !== null) {
             return;
         }
 
-        (function timer() {
-            self.timer = setTimeout(function () {
-                self._callback();
+        const timer = () => {
+            this.timer = setTimeout(() => {
+                this.callback();
                 timer();
-            }, time || self.time);
-        })();
+            }, this.time);
+        };
+
+        timer();
     }
 
     public setTime(time: number): VariableTimer {

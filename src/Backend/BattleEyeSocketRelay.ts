@@ -95,13 +95,17 @@ class BattleEyeSocketRelay {
 
         this.wss.on('message', (msg: websocket.RawData) => {
             let message = JSON.parse(msg.toString());
+            this.logger.debug(`Received message: ${JSON.stringify(message)}`);
 
             try {
                 let handled = websocketMessageHandler.handleMessage(message);
 
                 if (message.type === ServerEvents.SETTINGS_SAVE) {
                     this.settings = this.settingsRepo.get();
+                    this.updateTimers();
                 }
+
+                this.logger.debug(`Handled ${message.type} = ${handled}`);
 
                 if (handled) {
                     return;

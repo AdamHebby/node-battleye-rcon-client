@@ -412,6 +412,12 @@ $(function () {
 
         $('#settings-config-save').on('click', function () {
             nart.sendCommand(ServerEvents.SETTINGS_SAVE, settingsManager.settings);
+
+            nart.updateAutoRefreshTime(Math.min(
+                (settingsManager.settings.get('bans-refresh-interval') as number) * 1000,
+                (settingsManager.settings.get('players-refresh-interval') as number) * 1000,
+                (settingsManager.settings.get('admins-refresh-interval') as number) * 1000,
+            ));
         });
 
         $('#settings-colors-save').on('click', function () {

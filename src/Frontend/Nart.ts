@@ -206,6 +206,10 @@ class Nart {
         };
     }
 
+    public updateAutoRefreshTime(time: number) {
+        this.autoRefreshTime = time;
+    }
+
     public static getInstance(): Nart {
         if (Nart.instance === undefined) {
             Nart.instance = new Nart();
