@@ -13,7 +13,12 @@ abstract class PlayerData {
 
     protected randomId(): string
     {
-        return 'pd_' + Math.random().toString(36).substring(5);
+        const randomChars = 'abcdefghijklmnopqrstuvwxyz';
+        let result = '';
+        for (let i = 0; i < 12; i++) {
+            result += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+        }
+        return 'pd_' + result;
     }
 
     public jQuery(): JQuery<HTMLElement> {

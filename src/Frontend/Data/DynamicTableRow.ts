@@ -37,12 +37,11 @@ class DynamicTableRow
         let valid = true;
 
         $(element)
-            .find(`[data-${definedBy}="${this.getData(definedBy)}"]`)
+            .find(this.rowKey(definedBy))
             .each((_: number, element: HTMLElement) => {
                 for (let data in this.rowData) {
                     if (($(element).attr(`data-${data}`) ?? '').toString() !== (this.getData(data) ?? '').toString()) {
                         valid = false;
-                        console.debug(`Data mismatch for ${definedBy} (${this.getData(definedBy)}) ${data} - ${$(element).attr(`data-${data}`)} !== ${this.getData(data)}`);
                     }
                 }
             });
@@ -52,7 +51,7 @@ class DynamicTableRow
 
     public build(onTable: JQuery<HTMLElement>, definedBy: string): void
     {
-        let existingRow = $(onTable).find(`[data-${definedBy}="${this.getData(definedBy)}"]`);
+        let existingRow = $(onTable).find(this.rowKey(definedBy));
         let isNew = existingRow.length === 0;
 
         if (isNew || !this.compare(onTable, definedBy)) {
@@ -77,7 +76,7 @@ class DynamicTableRow
                 this.jqRow.append(td);
             }
 
-            $(onTable).find(`[data-bs-toggle="popover"]`).each(function (this: HTMLElement) {
+            $(onTable).find(`${this.rowKey(definedBy)} [data-bs-toggle="popover"]`).each(function (this: HTMLElement) {
                 let popover = Popover.getInstance(this);
                 popover?.hide();
                 popover?.disable();
@@ -98,6 +97,11 @@ class DynamicTableRow
                 $(onTable).append(this.jqRow);
             }
         }
+    }
+
+    private rowKey(definedBy: string): string
+    {
+        return `[data-${definedBy}="${this.getData(definedBy)}"]`;
     }
 }
 
