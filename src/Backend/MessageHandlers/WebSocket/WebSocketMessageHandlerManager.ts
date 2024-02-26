@@ -25,6 +25,9 @@ import { ICacheRepository } from "../../../Repository/CacheRepository";
 import { IServerRepository } from "../../../Repository/ServerRepository";
 import { ISettingsRepository } from "../../../Repository/SettingsRepository";
 import { IPlayersRepository } from "../../../Repository/PlayersRepository";
+import ReloadBansHandler from "./ReloadBansHandler";
+import ReloadEventsHandler from "./ReloadEventsHandler";
+import ReloadScriptsHandler from "./ReloadScriptsHandler";
 
 class WebSocketMessageHandlerManager {
     private messageHandlers: WebSocketMessageHandler[] = [];
@@ -67,6 +70,9 @@ class WebSocketMessageHandlerManager {
         factory.addMessageHandler(new PlayerUnbanHandler(rcon));
         factory.addMessageHandler(new PlayersHandler(rcon));
         factory.addMessageHandler(new PrivateMessageHandler(cacheRepository, rcon, socket));
+        factory.addMessageHandler(new ReloadBansHandler(rcon));
+        factory.addMessageHandler(new ReloadEventsHandler(rcon));
+        factory.addMessageHandler(new ReloadScriptsHandler(rcon));
         factory.addMessageHandler(new ServerDeleteHandler(serverRepository, socket));
         factory.addMessageHandler(new ServersListHandler(serverRepository, socket));
         factory.addMessageHandler(new ServersSaveHandler(serverRepository, socket));

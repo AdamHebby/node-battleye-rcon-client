@@ -445,5 +445,15 @@ $(function () {
         });
 
         PlayerActionContextMenu.addMenu($("#players-db, #server-players"), playerContextMenuActions);
+
+        $('#action-reload-scripts').on('click', function () {
+            nart.sendCommand(ServerEvents.RCON_RELOAD_SCRIPTS);
+        });
+        $('#action-reload-bans').on('click', function () {
+            nart.sendCommand(ServerEvents.RCON_RELOAD_BANS);
+        });
+        $('#action-reload-events').on('click', function () {
+            nart.sendCommand(ServerEvents.RCON_RELOAD_EVENTS);
+        });
     });
 });

@@ -10,6 +10,10 @@ enum ServerEvents {
     RCON_DISCONNECT = 'rcon_disconnect',
     RCON_RECONNECT = 'rcon_reconnect',
 
+    RCON_RELOAD_SCRIPTS = 'rcon_reload_scripts',
+    RCON_RELOAD_EVENTS = 'rcon_reload_events',
+    RCON_RELOAD_BANS = 'rcon_reload_bans',
+
     PLAYERS = 'players',
     BANS = 'bans',
     ADMINS = 'admins',
