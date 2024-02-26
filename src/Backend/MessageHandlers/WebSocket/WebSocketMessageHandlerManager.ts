@@ -1,4 +1,4 @@
-import { RconSender, SocketSender } from "../../Sender";
+import { IRconSender, RconSender, SocketSender } from "../../Sender";
 import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 import AdminChatHandler from "./AdminChatHandler";
@@ -46,7 +46,7 @@ class WebSocketMessageHandlerManager {
 
     public static factory(
         socket: SocketSender,
-        rcon: RconSender,
+        rcon: IRconSender,
         consoleColorRepository: IConsoleColorsRepository,
         cacheRepository: ICacheRepository,
         serverRepository: IServerRepository,

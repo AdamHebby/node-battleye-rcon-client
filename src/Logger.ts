@@ -25,6 +25,7 @@ class Logger
         let logger = createLogger({
             format: format,
             transports: this.commonTransports(path, [format]),
+            level: NartConfig.config().logging.level
         });
 
         this.normalLoggerInstances.set(path, logger);

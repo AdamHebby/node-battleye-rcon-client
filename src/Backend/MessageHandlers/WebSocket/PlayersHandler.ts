@@ -1,11 +1,11 @@
 import ServerEvents from "../../../ServerEvents";
-import { RconSender } from "../../Sender";
+import { IRconSender } from "../../Sender";
 import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class PlayersHandler extends WebSocketMessageHandler {
     public constructor(
-        private rconSender: RconSender
+        private rconSender: IRconSender
     ) {
         super();
     }

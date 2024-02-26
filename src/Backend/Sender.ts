@@ -8,7 +8,16 @@ declare interface Sender {
     send(data: object|string): void;
 }
 
-class SocketSender implements Sender {
+declare interface IRconSender {
+    updateRcon(rcon: BattleEyeClient | null): void;
+    send(data: object|string): void;
+}
+
+declare interface ISocketSender {
+    reply(original: InboundSocketMessage, response: MessageSocketResponse): void;
+}
+
+class SocketSender implements Sender, ISocketSender {
     constructor(
         private socket: websocket
     ) {
@@ -52,7 +61,7 @@ class SocketSender implements Sender {
     }
 }
 
-class RconSender implements Sender {
+class RconSender implements Sender, IRconSender {
     constructor(
         private rcon: BattleEyeClient | null
     ) {
@@ -75,4 +84,20 @@ class RconSender implements Sender {
     }
 }
 
-export { Sender, SocketSender, RconSender };
+class RconSenderMock implements Sender, IRconSender {
+    public constructor(
+        private callback: (data: string) => void = () => {}
+    ) {
+        Logger.normalLogger().debug(`RCON MOCK`);
+    }
+
+    public send(data: string): void {
+        Logger.normalLogger().debug(`MOCKING CMD ${data}`);
+        this.callback(data);
+    }
+
+    public updateRcon(_: BattleEyeClient | null): void {
+    }
+}
+
+export { Sender, SocketSender, RconSender, RconSenderMock, IRconSender, ISocketSender };

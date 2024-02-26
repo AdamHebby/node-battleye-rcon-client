@@ -1,14 +1,14 @@
 import Player from "../../../Models/Player";
 import { ICacheRepository } from "../../../Repository/CacheRepository";
 import ServerEvents from "../../../ServerEvents";
-import { RconSender, SocketSender } from "../../Sender";
+import { IRconSender, SocketSender } from "../../Sender";
 import { InboundSocketMessage, MessageSocketResponse } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 
 class PrivateMessageHandler extends WebSocketMessageHandler {
     public constructor(
         private cacheRepository: ICacheRepository,
-        private rconSender: RconSender,
+        private rconSender: IRconSender,
         private socketSender: SocketSender
     ) {
         super();

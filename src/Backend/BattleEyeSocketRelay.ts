@@ -9,7 +9,7 @@ import VariableTimer from '../VariableTimer';
 import PlayersRepository, { IPlayersRepository } from '../Repository/PlayersRepository';
 import CacheRepository, { ICacheRepository } from '../Repository/CacheRepository';
 import BattleyeMessageHandlerManager from '../Backend/MessageHandlers/Battleye/BattleyeMessageHandlerManager';
-import { SocketSender, RconSender } from '../Backend/Sender';
+import { SocketSender, RconSender, IRconSender, RconSenderMock } from '../Backend/Sender';
 import { MessageSocketResponse } from '../Backend/MessageHandlers/AbstractMessageHandler';
 import WebSocketMessageHandlerManager from '../Backend/MessageHandlers/WebSocket/WebSocketMessageHandlerManager';
 import { NartSession } from '../Models/Session';
@@ -24,7 +24,7 @@ class BattleEyeSocketRelay {
     public rcon: BattleEyeClient | null = null;
 
     public socketSender: SocketSender;
-    public rconSender: RconSender;
+    public rconSender: IRconSender;
 
     public cachedAuth: Server | null = null;
     public serverRepo: IServerRepository;
@@ -51,6 +51,10 @@ class BattleEyeSocketRelay {
         this.user         = user;
         this.wss          = wss;
         this.socketSender = new SocketSender(this.wss);
+        /**
+         * TODO: Make this a command line flag to switch to mock and flesh out the mock
+         */
+        // this.rconSender   = new RconSenderMock();
         this.rconSender   = new RconSender(this.rcon);
         this.serverRepo   = ServerRepository.repo(this.user);
         this.settingsRepo = SettingsRepository.repo(this.user);
