@@ -9,7 +9,7 @@ import VariableTimer from '../VariableTimer';
 import PlayersRepository, { IPlayersRepository } from '../Repository/PlayersRepository';
 import CacheRepository, { ICacheRepository } from '../Repository/CacheRepository';
 import BattleyeMessageHandlerManager from '../Backend/MessageHandlers/Battleye/BattleyeMessageHandlerManager';
-import { SocketSender, RconSender, IRconSender, RconSenderMock } from '../Backend/Sender';
+import { SocketSender, RconSender, IRconSender } from '../Backend/Sender';
 import { MessageSocketResponse } from '../Backend/MessageHandlers/AbstractMessageHandler';
 import WebSocketMessageHandlerManager from '../Backend/MessageHandlers/WebSocket/WebSocketMessageHandlerManager';
 import { NartSession } from '../Models/Session';
@@ -18,10 +18,11 @@ import ConsoleColorsRepository from '../Repository/ConsoleColorsRepository';
 import { NartUser } from '../Models/NartUser';
 import winston from 'winston';
 import { Logger } from '../Logger';
+import { BattleEyeClientWrapper, IBattleEyeClient, MockBattleEyeClientWrapper } from './BattleEyeClient';
 
 class BattleEyeSocketRelay {
     public wss: websocket;
-    public rcon: BattleEyeClient | null = null;
+    public rcon: IBattleEyeClient | null = null;
 
     public socketSender: SocketSender;
     public rconSender: IRconSender;
@@ -51,10 +52,6 @@ class BattleEyeSocketRelay {
         this.user         = user;
         this.wss          = wss;
         this.socketSender = new SocketSender(this.wss);
-        /**
-         * TODO: Make this a command line flag to switch to mock and flesh out the mock
-         */
-        // this.rconSender   = new RconSenderMock();
         this.rconSender   = new RconSender(this.rcon);
         this.serverRepo   = ServerRepository.repo(this.user);
         this.settingsRepo = SettingsRepository.repo(this.user);
@@ -191,7 +188,59 @@ class BattleEyeSocketRelay {
     }
 
     public getBattleEyeClient(server: Server): void {
-        this.rcon = new BattleEyeClient(server.address, server.port, server.password, 5000);
+        this.rcon?.close();
+        this.rcon = null;
+
+        if (server.address === 'mock' || server.address === 'localhost') {
+            this.rcon = new MockBattleEyeClientWrapper();
+            this.rcon.mockHandler = (message: string): string|null => {
+                Logger.normalLogger('relay.log').debug(`Mocking message: ${message}`);
+
+                if (message.trim() === 'players') {
+                    return 'Players on server:\n' +
+                        '[#] [IP Address]:[Port] [Ping] [GUID] [Name]\n' +
+                        '--------------------------------------------------\n' +
+                        '0  142.250.200.46:2387  78  xxxxxxxxxxxxxxxxxxxxxxxxxxxx1230 Survivor\n' +
+                        '1  204.79.197.200:2304  78  xxxxxxxxxxxxxxxxxxxxxxxxxxxx1231 Survivor (2)\n' +
+                        '2  13.107.21.200:8723   78  xxxxxxxxxxxxxxxxxxxxxxxxxxxx1232 Survivor (3)\n' +
+                        '3  20.236.44.162:65000  78  xxxxxxxxxxxxxxxxxxxxxxxxxxxx1233 Adam(Lobby)\n' +
+                        `(4 players in total)`;
+                }
+
+                if (message.trim() === 'bans') {
+                    return "GUID Bans:\n" +
+                        "[#] [GUID] [Minutes left] [Reason]\n" +
+                        "----------------------------------------\n" +
+                        "0  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 60   Some Reason a\n" +
+                        "1  bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb perm Some Reason b\n" +
+                        "2  cccccccccccccccccccccccccccccccc 127  Some Reason c\n" +
+                        "3  dddddddddddddddddddddddddddddddd perm Some Reason d\n" +
+                        "\n" +
+                        "IP Bans:\n" +
+                        "[#] [IP Address] [Minutes left] [Reason]\n" +
+                        "----------------------------------------------\n" +
+                        "4  52.142.124.215:4454  60   Some Reason\n" +
+                        "5  20.231.239.246:8347  perm Some Reason\n";
+                }
+
+                if (message.trim() === 'admins') {
+                    return "Connected RCon admins:\n" +
+                        "[#] [IP Address]:[Port]\n" +
+                        "-----------------------------\n" +
+                        "0 192.168.0.1:58606\n" +
+                        "1 127.0.0.1:19880\n" +
+                        "2 169.254.120.51:54771\n" +
+                        "3 233.252.85.56:49701";
+                }
+
+                return null;
+            };
+        } else {
+            this.rcon = new BattleEyeClientWrapper(
+                new BattleEyeClient(server.address, server.port, server.password, 5000)
+            );
+        }
+
         this.rconSender.updateRcon(this.rcon);
         this.cachedAuth = server;
 

@@ -1,15 +1,15 @@
 import websocket from 'ws';
-import BattleEyeClient from '../../node_modules/battle-eye-client/index';
 import ServerEvents from '../ServerEvents';
 import { InboundSocketMessage, MessageSocketResponse } from './MessageHandlers/AbstractMessageHandler';
 import { Logger } from '../Logger';
+import { IBattleEyeClient } from './BattleEyeClient';
 
 declare interface Sender {
     send(data: object|string): void;
 }
 
 declare interface IRconSender {
-    updateRcon(rcon: BattleEyeClient | null): void;
+    updateRcon(rcon: IBattleEyeClient | null): void;
     send(data: object|string): void;
 }
 
@@ -63,14 +63,12 @@ class SocketSender implements Sender, ISocketSender {
 
 class RconSender implements Sender, IRconSender {
     constructor(
-        private rcon: BattleEyeClient | null
+        private rcon: IBattleEyeClient | null
     ) {
     }
 
     send(data: string): void {
         if (this.rcon === null) return;
-
-        Logger.normalLogger().debug(`RUNNING CMD ${data}`);
 
         try {
             this.rcon.sendCommand(data);
@@ -79,25 +77,10 @@ class RconSender implements Sender, IRconSender {
         }
     }
 
-    public updateRcon(rcon: BattleEyeClient | null): void {
+    public updateRcon(rcon: IBattleEyeClient | null): void {
         this.rcon = rcon;
     }
 }
 
-class RconSenderMock implements Sender, IRconSender {
-    public constructor(
-        private callback: (data: string) => void = () => {}
-    ) {
-        Logger.normalLogger().debug(`RCON MOCK`);
-    }
 
-    public send(data: string): void {
-        Logger.normalLogger().debug(`MOCKING CMD ${data}`);
-        this.callback(data);
-    }
-
-    public updateRcon(_: BattleEyeClient | null): void {
-    }
-}
-
-export { Sender, SocketSender, RconSender, RconSenderMock, IRconSender, ISocketSender };
+export { Sender, SocketSender, RconSender, IRconSender, ISocketSender };

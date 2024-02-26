@@ -146,8 +146,6 @@ class Nart {
                 return;
             }
 
-            console.debug(data);
-
             if (data.data !== undefined && data.data.message !== undefined) {
                 let id: number = -1;
                 let guid: string = '';
