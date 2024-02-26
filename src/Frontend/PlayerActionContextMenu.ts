@@ -16,7 +16,10 @@ interface PlayerActionContextMenuCallbackData {
         comment?: string,
         nickname?: string,
         reason?: string,
-        duration?: number
+        duration?: number,
+        ban_guid?: string,
+        ban_ip?: string,
+        ban_previous_ips?: string,
     }
 }
 
@@ -39,9 +42,7 @@ class PlayerActionContextMenu {
                 <a class="dropdown-item" href="#" data-action="copy_name">Copy Name</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item text-warning" href="#" data-action="kick">Kick</a>
-                <a class="dropdown-item text-danger" href="#" data-action="ban_both">Ban (IP &amp; GUID)</a>
-                <a class="dropdown-item text-danger" href="#" data-action="ban_ip">Ban (IP ADDRESS)</a>
-                <a class="dropdown-item text-danger" href="#" data-action="ban_guid">Ban (GUID)</a>
+                <a class="dropdown-item text-danger" href="#" data-action="ban_user">Ban User</a>
             </div>
         `).hide().appendTo('body');
     }
@@ -191,13 +192,17 @@ class PlayerActionContextMenu {
             return;
         }
 
-        if (action === 'ban_both') {
+        if (action === 'ban_user') {
             let form = $('<form>')
                 .append(BootstrapUtils.formTextGroup('reason', 'Reason:', 'Banned by Admin'))
-                .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
+                .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', -1, 5256000, -1))
+                .append(BootstrapUtils.formCheckboxGroup('ban_guid', 'Ban GUID', true))
+                .append(BootstrapUtils.formCheckboxGroup('ban_ip', 'Ban Current IP', false))
+                .append(BootstrapUtils.formCheckboxGroup('ban_previous_ips', 'Ban Previous IPs', false))
+            ;
 
-            BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID and IP address?`, form, function (data: TModalData) {
-                if (data.reason === undefined || data.duration === undefined) {
+            BootstrapUtils.formModal(`Ban ${name}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip}?`, form, function (data: TModalData) {
+                if (data.reason === undefined || data.duration === undefined || (data.ban_guid === undefined && data.ban_ip === undefined && data.ban_previous_ips === undefined)) {
                     return;
                 }
 
@@ -212,61 +217,6 @@ class PlayerActionContextMenu {
                     });
                     return;
                 }
-
-                // nart.sendCommand(Events.USER_BAN, {id: gameId, source: 'both', reason: data.reason, duration: data.duration});
-            });
-            return;
-        }
-
-        if (action === 'ban_ip') {
-            let form = $('<form>')
-                .append(BootstrapUtils.formTextGroup('reason', 'Reason:', 'Banned by Admin'))
-                .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
-
-            BootstrapUtils.formModal(`Ban ${ip}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their IP address?`, form, function (data: TModalData) {
-                if (data.reason === undefined || data.duration === undefined) {
-                    return;
-                }
-
-                if (callback) {
-                    callback(action, {
-                        dbId: dbId,
-                        gameId: gameId,
-                        guid: guid,
-                        ip: ip,
-                        name: name,
-                        formData: data
-                    });
-                    return;
-                }
-                // nart.sendCommand(Events.USER_BAN, {id: gameId, source: 'ip', reason: data.reason, duration: data.duration});
-            });
-            return;
-        }
-
-        if (action === 'ban_guid') {
-            let form = $('<form>')
-                .append(BootstrapUtils.formTextGroup('reason', 'Reason:', 'Banned by Admin'))
-                .append(BootstrapUtils.formNumberGroup('duration', 'Duration:', 0, 525600, 0));
-
-            BootstrapUtils.formModal(`Ban ${guid}`, `Are you sure you want to Ban ${name} (${guid}) at ${ip} by their GUID?`, form, function (data: TModalData) {
-                if (data.reason === undefined || data.duration === undefined) {
-                    return;
-                }
-
-                if (callback) {
-                    callback(action, {
-                        dbId: dbId,
-                        gameId: gameId,
-                        guid: guid,
-                        ip: ip,
-                        name: name,
-                        formData: data
-                    });
-                    return;
-                }
-
-                // nart.sendCommand(Events.USER_BAN, {id: gameId, source: 'guid', reason: data.reason, duration: data.duration});
             });
             return;
         }

@@ -61,10 +61,10 @@ class WebSocketMessageHandlerManager {
         factory.addMessageHandler(new ColorsListHandler(consoleColorRepository, socket));
         factory.addMessageHandler(new ColorsSaveHandler(consoleColorRepository, socket));
         factory.addMessageHandler(new CustomCommandHandler(rcon));
-        factory.addMessageHandler(new PlayerBanHandler());
+        factory.addMessageHandler(new PlayerBanHandler(playersRepository, rcon));
         factory.addMessageHandler(new PlayerDeleteHandler());
         factory.addMessageHandler(new PlayerKickHandler(cacheRepository, rcon, socket));
-        factory.addMessageHandler(new PlayerUnbanHandler());
+        factory.addMessageHandler(new PlayerUnbanHandler(rcon));
         factory.addMessageHandler(new PlayersHandler(rcon));
         factory.addMessageHandler(new PrivateMessageHandler(cacheRepository, rcon, socket));
         factory.addMessageHandler(new ServerDeleteHandler(serverRepository, socket));

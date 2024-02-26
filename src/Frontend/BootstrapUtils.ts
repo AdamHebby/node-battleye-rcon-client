@@ -42,6 +42,15 @@ class BootstrapUtils {
         `);
     }
 
+    public static formCheckboxGroup (name: string, label: string, value: boolean = false) {
+        return $(`
+            <div class="form-group mb-2 row g-0">
+                <label for="${name}" class="col-4 col-form-label form-label">${label}</label>
+                <input type="checkbox" class="col-1 mt-2 form-check-input" name="${name}" ${value ? 'checked' : ''}>
+            </div>
+        `);
+    }
+
     public static formTextGroup (name: string, label: string, value: string = '') {
         return $(`
             <div class="form-group mb-2 row g-0">

@@ -6,7 +6,6 @@ import GUID from "./Data/GUID";
 
 interface BanRemoveContextMenuCallbackData {
     id: number,
-    reason: string
 }
 
 interface BanRemoveContextMenuCallback {
@@ -51,15 +50,10 @@ class BanRemoveContextMenu {
         if (action === 'remove_ban' && id !== '') {
             let form = $('<form>');
 
-            BootstrapUtils.formModal(`Kick ${name}`, `Are you sure you want to remove the ban on ${bannedOn}?`, form, function (data: TModalData) {
-                if (data.reason === undefined || data.reason === '' || data.reason === null) {
-                    return;
-                }
-
+            BootstrapUtils.formModal(`Unban ${bannedOn}`, `Are you sure you want to remove the ban on ${bannedOn}?`, form, function (_: TModalData) {
                 if (callback) {
                     callback(action, {
-                        id: id,
-                        reason: data.reason as string
+                        id: id
                     });
                     return;
                 }

@@ -69,30 +69,14 @@ $(function () {
             return;
         }
 
-        if (action === 'ban_both' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
+        if (action === 'ban_user' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
             nart.sendCommand(ServerEvents.USER_BAN, {
-                id: data.gameId,
-                source: 'both',
-                reason: data.formData.reason,
-                duration: data.formData.duration
-            });
-            return;
-        }
-
-        if (action === 'ban_ip' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
-            nart.sendCommand(ServerEvents.USER_BAN, {
-                id: data.gameId,
-                source: 'ip',
-                reason: data.formData.reason,
-                duration: data.formData.duration
-            });
-            return;
-        }
-
-        if (action === 'ban_guid' && data.formData.reason !== undefined && data.formData.duration !== undefined) {
-            nart.sendCommand(ServerEvents.USER_BAN, {
-                id: data.gameId,
-                source: 'ip',
+                guid: data.guid,
+                source: {
+                    banGuid: data.formData.ban_guid !== undefined,
+                    banIp: data.formData.ban_ip !== undefined,
+                    banPreviousIps: data.formData.ban_previous_ips !== undefined,
+                },
                 reason: data.formData.reason,
                 duration: data.formData.duration
             });
@@ -101,7 +85,7 @@ $(function () {
     };
 
     const playerUnbanContextActions: BanRemoveContextMenuCallback = function (action: string, data: BanRemoveContextMenuCallbackData) {
-        if (action === 'ban_remove' && data.id !== null) {
+        if (action === 'remove_ban' && data.id !== null) {
             nart.unbanUser(data.id);
             return;
         }
