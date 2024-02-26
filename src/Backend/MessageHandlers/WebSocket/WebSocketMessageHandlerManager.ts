@@ -1,4 +1,4 @@
-import { IRconSender, RconSender, SocketSender } from "../../Sender";
+import { IRconSender, SocketSender } from "../../Sender";
 import { InboundSocketMessage } from "../AbstractMessageHandler";
 import WebSocketMessageHandler from "./WebSocketMessageHandler";
 import AdminChatHandler from "./AdminChatHandler";
